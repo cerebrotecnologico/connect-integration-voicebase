@@ -22,6 +22,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Lists;
+import com.voicebase.api.model.VbIncludeTypeEnum;
 
 /**
  * Attribute names provided by Amazon Connect to configure VoiceBase API
@@ -97,8 +98,10 @@ public class Lambda {
   public static final String DEFAULT_CALLBACK_METHOD = "POST";
   public static final boolean DEFAULT_ENABLE_KNOWLEDGE_DISCOVERY = false;
   public static final boolean DEFAULT_ENABLE_ADVANCED_PUNCTUATION = true;
-  public static final List<String> DEFAULT_CALLBACK_INCLUDES_V3 = Lists.newArrayList("METADATA", "TRANSCRIPT",
-      "SPOTTING", "KNOWLEDGE", "PREDICTION");
+  public static final List<String> DEFAULT_CALLBACK_INCLUDES_V3 = Lists.newArrayList(
+      VbIncludeTypeEnum.METADATA.toValue(), VbIncludeTypeEnum.TRANSCRIPT.toValue(),
+      VbIncludeTypeEnum.SPOTTING.toValue(), VbIncludeTypeEnum.KNOWLEDGE.toValue(),
+      VbIncludeTypeEnum.PREDICTION.toValue(), VbIncludeTypeEnum.METRICS.toValue());
   public static final long DEFAULT_MEDIA_URL_TTL_MILLIS = 900000L; // 15min
   public static final List<String> DEFAULT_SOURCE_IPS = Lists.newArrayList("52.6.244.43", "52.6.208.178",
       "52.2.171.140");

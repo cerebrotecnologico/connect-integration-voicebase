@@ -25,6 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.voicebase.api.model.VbMedia;
 
 import retrofit.mime.TypedFile;
@@ -37,13 +38,13 @@ import retrofit.mime.TypedFile;
 public class VoiceBaseClient {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(VoiceBaseClient.class);
+  private static final ObjectMapper OM = new ObjectMapper();
 
   @Inject
   private MediaService mediaService;
-  
+
   @Inject
   private VoiceBaseService voicebaseService;
-
 
   @Inject
   private MimetypesFileTypeMap mimeMap;
@@ -62,6 +63,17 @@ public class VoiceBaseClient {
 
   public String uploadMedia(String token, MediaProcessingRequest request) {
     VbMedia result = null;
+
+    LOGGER.debug("Sending request to VoiceBase API: {}", request);
+
+    if (LOGGER.isTraceEnabled()) {
+      try {
+        LOGGER.trace("VB configuration: {}", OM.writeValueAsString(request.getConfiguration()));
+      } catch (Exception e) {
+        LOGGER.trace("Unable to serialize VB configuration");
+      }
+    }
+
     if (request.getMediaFile() != null) {
       TypedFile file = new TypedFile(mimeMap.getContentType(request.getMediaFile()), request.getMediaFile());
 
@@ -172,11 +184,10 @@ public class VoiceBaseClient {
     return mediaId;
   }
 
-  
   public Map<String, ?> getResources(String token) {
     return voicebaseService.getResources(authHeaderValue(token));
   }
-  
+
   private String authHeaderValue(String token) {
     return "Bearer " + token;
   }
