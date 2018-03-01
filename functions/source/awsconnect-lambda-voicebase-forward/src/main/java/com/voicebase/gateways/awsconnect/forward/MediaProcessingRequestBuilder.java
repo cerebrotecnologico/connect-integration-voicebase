@@ -240,6 +240,8 @@ public class MediaProcessingRequestBuilder {
     
     ArrayList<String>speechFeatures=new ArrayList<>();
     speechConfigBuilder.features(speechFeatures);
+    
+    speechFeatures.add(SPEECH_FEATURE_VOICE);
     if (advancedPunctuationEnabled) {
       speechFeatures.add(SPEECH_FEATURE_ADVANCED_PUNCTUATION);
     }
@@ -339,9 +341,6 @@ public class MediaProcessingRequestBuilder {
       // classifiers
       if (predictionsEnabled) {
         
-        // voice features only have an effect if predictions are on
-        speechFeatures.add(SPEECH_FEATURE_VOICE);
-
         ImmutableConfiguration classificationAttr = vbAttrs.immutableSubset(Lambda.VB_ATTR_CLASSIFIER);
         Set<String> classifierNames = getStringParameterSet(classificationAttr, Lambda.VB_ATTR_CLASSIFIER_NAMES);
         if (classifierNames != null && !classifierNames.isEmpty()) {
