@@ -43,6 +43,7 @@ public class Lambda {
   public static final String ENV_API_URL = "VOICEBASE_API_URL";
 
   public static final String ENV_TRANSCRIPT_OUTPUT_STREAM = "VOICEBASE_TRANSCRIPT_OUTPUT_STREAM";
+  public static final String ENV_TRANSCRIPT_OUTPUT_ADD_NEWLINE = "VOICEBASE_TRANSCRIPT_OUTPUT_ADD_NEWLINE";
   public static final String ENV_CALLBACK_SOURCE_IPS = "VOICEBASE_CALLBACK_SOURCE_IPS";
   public static final String ENV_CALLBACK_SOURCE_IPS_VALIDATE = "VOICEBASE_CALLBACK_SOURCE_IPS_VALIDATE";
 
@@ -109,6 +110,7 @@ public class Lambda {
   public static final boolean DEFAULT_SOURCE_IPS_VALIDATE = true;
   public static final String DEFAULT_LEFT_SPEAKER_NAME = "Caller";
   public static final String DEFAULT_RIGHT_SPEAKER_NAME = "Agent";
+  public static final boolean DEFAULT_TRANSCRIPT_OUTPUT_ADD_NEWLINE = false;
 
   // other
   public static final TypeReference<Map<String, Object>> MSG_JAVA_TYPE = new TypeReference<Map<String, Object>>() {

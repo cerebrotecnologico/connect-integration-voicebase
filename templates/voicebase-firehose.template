@@ -22,7 +22,8 @@
                         "VoicebaseEnableKnowledgeDiscovery",
                         "NumberOfKinesisShards",
                         "OutputS3BucketName",
-                        "OutputS3KeyPrefix"
+                        "OutputS3KeyPrefix",
+                        "OutputAppendNewline"
                     ]
                 },
                 {
@@ -62,6 +63,9 @@
                 },
                 "OutputS3KeyPrefix": {
                     "default": "VoiceBase Transcription Output S3 Key Prefix"
+                },
+                "OutputAppendNewline": {
+                    "default": "Append Newline Character to Transcription Output"
                 }
             }
         }
@@ -119,6 +123,15 @@
             "Description": "S3 key prefix for VoiceBase transcription delivery; can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)",
             "AllowedPattern": "^[0-9a-zA-Z-/]*$",
             "ConstraintDescription": "VoiceBase transcription key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)"
+        },
+        "OutputAppendNewline": {
+            "AllowedValues": [
+                "yes",
+                "no"
+            ],
+            "Type": "String",
+            "Default": "yes",
+            "Description": "Append Newline Character to Transcription Output. Useful when using ETL tools that support NLDJSON."
         }
     },
     "Rules": {
@@ -145,6 +158,14 @@
             "Fn::Equals": [
                 {
                     "Ref": "VoicebaseEnableKnowledgeDiscovery"
+                },
+                "yes"
+            ]
+        },
+        "appendNewline": {
+           "Fn::Equals": [
+                { 
+                    "Ref": "OutputAppendNewline" 
                 },
                 "yes"
             ]
@@ -639,6 +660,13 @@
                     "Variables": {
                         "VOICEBASE_TRANSCRIPT_OUTPUT_STREAM": {
                             "Ref": "VoicebaseTranscriptionStream"
+                        },
+                        "VOICEBASE_TRANSCRIPT_OUTPUT_ADD_NEWLINE": {
+                            "Fn::If": [
+                                "appendNewline",
+                                "true",
+                                "false"
+                            ]
                         }
                     }
                 },
