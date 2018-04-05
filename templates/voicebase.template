@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "VoiceBase API Gateway for Amazon Connect",
+    "Description": "VoiceBase API Gateway for Amazon Connect (qs-1oaucuqq4)",
     "Metadata": {
         "AWS::CloudFormation::Interface": {
             "ParameterGroups": [
