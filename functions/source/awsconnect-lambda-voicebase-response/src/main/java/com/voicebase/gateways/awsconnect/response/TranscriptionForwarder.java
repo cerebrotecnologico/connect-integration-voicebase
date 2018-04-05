@@ -29,30 +29,29 @@ import com.amazonaws.services.kinesis.model.PutRecordRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.voicebase.api.model.VbMedia;
 import com.voicebase.gateways.awsconnect.BeanFactory;
+import com.voicebase.gateways.awsconnect.ConfigUtil;
 import com.voicebase.gateways.awsconnect.lambda.Lambda;
 
 /**
  * 
  * @author Volker Kueffel <volker@voicebase.com>
  *
- */ 
+ */
 public class TranscriptionForwarder {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TranscriptionForwarder.class);
 
   private String transcriptOutputStream;
+  private boolean addNewlineToOutput = false;
 
   private final ObjectMapper objectMapper;
   private final AmazonKinesis kinesisClient;
-
 
   public TranscriptionForwarder(Map<String, String> env) {
     objectMapper = BeanFactory.objectMapper();
     kinesisClient = AmazonKinesisClientBuilder.defaultClient();
     configure(env);
   }
-  
-  
 
   public void forward(String processingResult) {
 
@@ -103,16 +102,26 @@ public class TranscriptionForwarder {
     try {
       // deserialize/serialize to remove any existing JSON formatting
       Map<?, ?> deserialized = objectMapper.readValue(processingResult.getBytes(), Map.class);
-      return objectMapper.writeValueAsBytes(deserialized);
+      if (!addNewlineToOutput) {
+        return objectMapper.writeValueAsBytes(deserialized);
+      } else {
+        return new String(objectMapper.writeValueAsString(deserialized) + "\n").getBytes();
+      }
     } catch (Exception e) {
       LOGGER.warn("Unable to deserialize/serialize response, sending original", e);
     }
 
-    return processingResult.getBytes();
+    if (!addNewlineToOutput) {
+      return processingResult.getBytes();
+    } else {
+      return new String(processingResult + "\n").getBytes();
+    }
   }
 
   void configure(Map<String, String> env) {
     transcriptOutputStream = getStringSetting(env, Lambda.ENV_TRANSCRIPT_OUTPUT_STREAM, null);
+    addNewlineToOutput = ConfigUtil.getBooleanSetting(env, Lambda.ENV_TRANSCRIPT_OUTPUT_ADD_NEWLINE,
+        Lambda.DEFAULT_TRANSCRIPT_OUTPUT_ADD_NEWLINE);
   }
 
 }

@@ -45,7 +45,9 @@ import com.voicebase.api.model.VbIncludeTypeEnum;
 import com.voicebase.api.model.VbIngestConfiguration;
 import com.voicebase.api.model.VbIngestConfiguration.VbIngestConfigurationBuilder;
 import com.voicebase.api.model.VbKnowledgeConfiguration;
+import com.voicebase.api.model.VbLabsConfiguration;
 import com.voicebase.api.model.VbKnowledgeConfiguration.VbKnowledgeConfigurationBuilder;
+import com.voicebase.api.model.VbLabsConfiguration.VbLabsConfigurationBuilder;
 import com.voicebase.api.model.VbMetadata;
 import com.voicebase.api.model.VbMetricGroupConfiguration;
 import com.voicebase.api.model.VbMetricGroupConfiguration.VbMetricGroupConfigurationBuilder;
@@ -66,6 +68,7 @@ import com.voicebase.api.model.VbTranscriptRedactorConfiguration;
 import com.voicebase.api.model.VbVocabularyConfiguration;
 import com.voicebase.api.model.VbVocabularyConfiguration.VbVocabularyConfigurationBuilder;
 import com.voicebase.api.model.VbVocabularyTermConfiguration;
+import com.voicebase.api.model.VbVoiceActivityConfiguration;
 import com.voicebase.gateways.awsconnect.VoiceBaseAttributeExtractor;
 import com.voicebase.gateways.awsconnect.lambda.Lambda;
 import com.voicebase.sdk.v3.MediaProcessingRequest;
@@ -237,10 +240,12 @@ public class MediaProcessingRequestBuilder {
     VbPredictionConfigurationBuilder predictionConfigBuilder = VbPredictionConfiguration.builder();
     VbKnowledgeConfigurationBuilder knowledgeConfigBuilder = VbKnowledgeConfiguration.builder()
         .enableDiscovery(Boolean.valueOf(knowledgeDiscoveryEnabled));
-    
-    ArrayList<String>speechFeatures=new ArrayList<>();
+    VbLabsConfigurationBuilder labsConfigBuilder = VbLabsConfiguration.builder();
+
+    ArrayList<String> speechFeatures = new ArrayList<>();
     speechConfigBuilder.features(speechFeatures);
-    
+
+    labsConfigBuilder.voiceActivity(VbVoiceActivityConfiguration.builder().enableVoiceActivity(Boolean.TRUE).build());
     speechFeatures.add(SPEECH_FEATURE_VOICE);
     if (advancedPunctuationEnabled) {
       speechFeatures.add(SPEECH_FEATURE_ADVANCED_PUNCTUATION);
@@ -335,12 +340,11 @@ public class MediaProcessingRequestBuilder {
         attributes.put(getVoicebaseAttributeName(Lambda.VB_ATTR_KEYWORDS, Lambda.VB_ATTR_KEYWORDS_GROUPS), groups);
       }
 
-      
       speechConfigBuilder.language(getStringParameter(vbAttrs, Lambda.VB_ATTR_LANGUAGE));
 
       // classifiers
       if (predictionsEnabled) {
-        
+
         ImmutableConfiguration classificationAttr = vbAttrs.immutableSubset(Lambda.VB_ATTR_CLASSIFIER);
         Set<String> classifierNames = getStringParameterSet(classificationAttr, Lambda.VB_ATTR_CLASSIFIER_NAMES);
         if (classifierNames != null && !classifierNames.isEmpty()) {
@@ -356,8 +360,6 @@ public class MediaProcessingRequestBuilder {
               classifierNames);
         }
       }
-
-      
 
       // custom vocabularies
       List<VbVocabularyConfiguration> vocabs = new ArrayList<>();
@@ -392,15 +394,15 @@ public class MediaProcessingRequestBuilder {
       if (!vocabs.isEmpty()) {
         configBuilder.vocabularies(vocabs);
       }
-      
+
       // metrics
       ImmutableConfiguration metricsAttrs = vbAttrs.immutableSubset(Lambda.VB_ATTR_METRICS);
-      Set<String> metricGroups=getStringParameterSet(metricsAttrs, Lambda.VB_ATTR_METRICS_GROUPS);
-      if (metricGroups!=null && !metricGroups.isEmpty()) {
-        List<VbMetricGroupConfiguration> metricsConfs=new ArrayList<>();
+      Set<String> metricGroups = getStringParameterSet(metricsAttrs, Lambda.VB_ATTR_METRICS_GROUPS);
+      if (metricGroups != null && !metricGroups.isEmpty()) {
+        List<VbMetricGroupConfiguration> metricsConfs = new ArrayList<>();
         for (String metricGroupName : metricGroups) {
-          VbMetricGroupConfigurationBuilder metricConfigBuilder=VbMetricGroupConfiguration.builder();
-          metricConfigBuilder.metricGroupName(metricGroupName); 
+          VbMetricGroupConfigurationBuilder metricConfigBuilder = VbMetricGroupConfiguration.builder();
+          metricConfigBuilder.metricGroupName(metricGroupName);
           metricsConfs.add(metricConfigBuilder.build());
         }
         configBuilder.metrics(metricsConfs);
@@ -420,7 +422,8 @@ public class MediaProcessingRequestBuilder {
 
     configBuilder.ingest(ingestConfigBuilder.build()).publish(publishConfigBuilder.build())
         .transcript(transcriptConfigBuilder.build()).speechModel(speechConfigBuilder.build())
-        .prediction(predictionConfigBuilder.build()).knowledge(knowledgeConfigBuilder.build());
+        .prediction(predictionConfigBuilder.build()).knowledge(knowledgeConfigBuilder.build())
+        .labs(labsConfigBuilder.build());
 
     return configBuilder.build();
   }
