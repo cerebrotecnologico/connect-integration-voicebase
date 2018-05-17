@@ -88,8 +88,8 @@ public class LambdaVoicebaseApiTokenValidator extends LambdaProcessor
     response.setPhysicalResourceId(DigestUtils.md5Hex(vbApiToken));
     response.setNoEcho(false);
 
-    if (StringUtils.endsWithIgnoreCase("Create", requestType)
-        || StringUtils.endsWithIgnoreCase("Update", requestType)) {
+    if (StringUtils.equalsIgnoreCase("Create", requestType)
+        || StringUtils.equalsIgnoreCase("Update", requestType)) {
       validateToken(request, response);
     } else {
       LOGGER.info("Nothing to do for {} requests", requestType);
