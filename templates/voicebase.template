@@ -566,10 +566,15 @@
             }
         },
         "VoicebaseTokenValidation": {
-          "Type": "Custom::VoicebaseTokenValidation",
-          "Properties": {
-            "ServiceToken": { "Fn::GetAtt" : ["VoicebaseTokenValidationLambda", "Arn"] }
-          }
+            "Type": "Custom::VoicebaseTokenValidation",
+            "Properties": {
+                "ServiceToken": {
+                    "Fn::GetAtt": [
+                        "VoicebaseTokenValidationLambda",
+                        "Arn"
+                    ]
+                }
+            }
         },
         "ConnectToVoicebaseLambda": {
             "Type": "AWS::Lambda::Function",
