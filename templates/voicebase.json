@@ -1,12 +1,12 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "VoiceBase API Gateway & Firehose for Amazon Connect (qs-1oaucuqq9)",
+    "Description": "VoiceBase integration for Amazon Connect (qs-1oaucuqq9)",
     "Metadata": {
         "AWS::CloudFormation::Interface": {
             "ParameterGroups": [
                 {
                     "Label": {
-                        "default": "Amazon Connect Instance"
+                        "default": "Amazon Connect configuration"
                     },
                     "Parameters": [
                         "ConnectS3BucketName",
@@ -15,24 +15,14 @@
                 },
                 {
                     "Label": {
-                        "default": "VoiceBase API Gateway"
+                        "default": "VoiceBase configuration"
                     },
                     "Parameters": [
                         "VoicebaseApiToken",
                         "VoicebaseEnableKnowledgeDiscovery",
                         "NumberOfKinesisShards",
-                        "OutputS3BucketName",
-                        "OutputS3KeyPrefix",
-                        "OutputAppendNewline"
-                    ]
-                },
-                {
-                    "Label": {
-                        "default": "Amazon Connect Quick Start"
-                    },
-                    "Parameters": [
-                        "QSS3BucketName",
-                        "QSS3KeyPrefix"
+                        "VBS3KeyPrefix",
+                        "VBAppendNewline"
                     ]
                 }
             ],
@@ -52,39 +42,16 @@
                 "NumberOfKinesisShards": {
                     "default": "VoiceBase Transcript Amazon Kinesis Data Stream Shard count"
                 },
-                "QSS3BucketName": {
-                    "default": "Quick Start S3 Bucket Name"
-                },
-                "QSS3KeyPrefix": {
-                    "default": "Quick Start S3 Key Prefix"
-                },
-                "OutputS3BucketName": {
-                    "default": "VoiceBase Transcription Output S3 Bucket Name"
-                },
-                "OutputS3KeyPrefix": {
+                "VBS3KeyPrefix": {
                     "default": "VoiceBase Transcription Output S3 Key Prefix"
                 },
-                "OutputAppendNewline": {
+                "VBAppendNewline": {
                     "default": "Append Newline Character to Transcription Output"
                 }
             }
         }
     },
     "Parameters": {
-        "QSS3BucketName": {
-            "Type": "String",
-            "Default": "aws-quickstart",
-            "Description": "S3 bucket name for the Quick Start assets. This string can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)",
-            "AllowedPattern": "^[0-9a-zA-Z]+([0-9a-zA-Z-.]*[0-9a-zA-Z])*$",
-            "ConstraintDescription": "Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)"
-        },
-        "QSS3KeyPrefix": {
-            "Type": "String",
-            "Default": "connect-integration-voicebase/",
-            "Description": "S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)",
-            "AllowedPattern": "^[0-9a-zA-Z-/]*$",
-            "ConstraintDescription": "Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)"
-        },
         "VoicebaseApiToken": {
             "Type": "String",
             "Description": "Your VoiceBase API Token from the VoiceBase Developer Portal"
@@ -112,19 +79,14 @@
             "Default": 1,
             "Description": "Number of shards for transcription Data Stream.  This should be at least the number of shards on your Amazon Connect instance's output Amazon Kinesis Data Stream."
         },
-        "OutputS3BucketName": {
-            "Type": "String",
-            "AllowedPattern": "^[0-9a-zA-Z]+([0-9a-zA-Z-.]*[0-9a-zA-Z])*$",
-            "Description": "S3 bucket where the transcription output will be stored"
-        },
-        "OutputS3KeyPrefix": {
+        "VBS3KeyPrefix": {
             "Type": "String",
             "Default": "connect/voicebase/transcriptions/",
             "Description": "S3 key prefix for VoiceBase transcription delivery; can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)",
             "AllowedPattern": "^[0-9a-zA-Z-/]*$",
             "ConstraintDescription": "VoiceBase transcription key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)"
         },
-        "OutputAppendNewline": {
+        "VBAppendNewline": {
             "AllowedValues": [
                 "yes",
                 "no"
@@ -165,13 +127,27 @@
         "appendNewline": {
             "Fn::Equals": [
                 {
-                    "Ref": "OutputAppendNewline"
+                    "Ref": "VBAppendNewline"
                 },
                 "yes"
             ]
         }
     },
     "Resources": {
+        "VBS3BucketName": {
+            "Type": "AWS::S3::Bucket",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+                "LifecycleConfiguration": {
+                    "Rules": [
+                        {
+                            "Status": "Enabled",
+                            "ExpirationInDays": "90"
+                        }
+                    ]
+                }
+            }
+        },
         "ConnectToVoicebaseRole": {
             "Type": "AWS::IAM::Role",
             "Properties": {
@@ -541,20 +517,8 @@
                     ]
                 },
                 "Code": {
-                    "S3Bucket": {
-                        "Ref": "QSS3BucketName"
-                    },
-                    "S3Key": {
-                        "Fn::Join": [
-                            "",
-                            [
-                                {
-                                    "Ref": "QSS3KeyPrefix"
-                                },
-                                "functions/packages/voicebase-lambda-auth-validation/lambda.jar"
-                            ]
-                        ]
-                    }
+                    "S3Bucket": "aws-quickstart",
+                    "S3Key": "connect-integration-voicebase/functions/packages/voicebase-lambda-auth-validation/lambda.jar"
                 },
                 "Environment": {
                     "Variables": {
@@ -629,20 +593,8 @@
                     ]
                 },
                 "Code": {
-                    "S3Bucket": {
-                        "Ref": "QSS3BucketName"
-                    },
-                    "S3Key": {
-                        "Fn::Join": [
-                            "",
-                            [
-                                {
-                                    "Ref": "QSS3KeyPrefix"
-                                },
-                                "functions/packages/awsconnect-lambda-voicebase-forward/lambda.jar"
-                            ]
-                        ]
-                    }
+                    "S3Bucket": "aws-quickstart",
+                    "S3Key": "connect-integration-voicebase/functions/packages/awsconnect-lambda-voicebase-forward/lambda.jar"
                 },
                 "Environment": {
                     "Variables": {
@@ -690,20 +642,8 @@
                     ]
                 },
                 "Code": {
-                    "S3Bucket": {
-                        "Ref": "QSS3BucketName"
-                    },
-                    "S3Key": {
-                        "Fn::Join": [
-                            "",
-                            [
-                                {
-                                    "Ref": "QSS3KeyPrefix"
-                                },
-                                "functions/packages/awsconnect-lambda-voicebase-response/lambda.jar"
-                            ]
-                        ]
-                    }
+                    "S3Bucket": "aws-quickstart",
+                    "S3Key": "connect-integration-voicebase/functions/packages/awsconnect-lambda-voicebase-response/lambda.jar"
                 },
                 "Environment": {
                     "Variables": {
@@ -962,7 +902,7 @@
                                         [
                                             "arn:aws:s3:::",
                                             {
-                                                "Ref": "OutputS3BucketName"
+                                                "Ref": "VBS3BucketName"
                                             }
                                         ]
                                     ]
@@ -973,7 +913,7 @@
                                         [
                                             "arn:aws:s3:::",
                                             {
-                                                "Ref": "OutputS3BucketName"
+                                                "Ref": "VBS3BucketName"
                                             },
                                             "/*"
                                         ]
@@ -1019,14 +959,14 @@
                             [
                                 "arn:aws:s3:::",
                                 {
-                                    "Ref": "OutputS3BucketName"
+                                    "Ref": "VBS3BucketName"
                                 }
                             ]
                         ]
                     },
                     "CompressionFormat": "UNCOMPRESSED",
                     "Prefix": {
-                        "Ref": "OutputS3KeyPrefix"
+                        "Ref": "VBS3KeyPrefix"
                     },
                     "BufferingHints": {
                         "IntervalInSeconds": 60,
@@ -1043,6 +983,24 @@
         }
     },
     "Outputs": {
+        "VoicebaseTokenValidationLambda": {
+            "Description": "VoiceBase token validation Lambda function.",
+            "Value": {
+                "Fn::GetAtt": "VoicebaseTokenValidationLambda.Arn"
+            }
+        },
+        "ConnectToVoicebaseLambda": {
+            "Description": "VoiceBase integration Lambda function.",
+            "Value": {
+                "Fn::GetAtt": "ConnectToVoicebaseLambda.Arn"
+            }
+        },
+        "VoicebaseCallbackLambda": {
+            "Description": "VoiceBase vall back Lambda function.",
+            "Value": {
+                "Fn::GetAtt": "VoicebaseCallbackLambda.Arn"
+            }
+        },
         "VoicebaseTranscriptionStream": {
             "Description": "VoiceBase Transcription Stream.Transcription delivered from VoiceBase.",
             "Value": {
@@ -1052,13 +1010,13 @@
         "VoicebaseTranscriptionS3Bucket": {
             "Description": "VoiceBase Transcription Output S3 Bucket Name",
             "Value": {
-                "Ref": "OutputS3BucketName"
+                "Ref": "VBS3BucketName"
             }
         },
         "VoicebaseTranscriptionS3KeyPrefix": {
             "Description": "VoiceBase Transcription Output S3 Key Prefix",
             "Value": {
-                "Ref": "OutputS3KeyPrefix"
+                "Ref": "VBS3KeyPrefix"
             }
         }
     }
