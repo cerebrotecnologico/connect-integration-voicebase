@@ -1,12 +1,12 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "VoiceBase API Gateway & Firehose for Amazon Connect (qs-1oaucuqq9)",
+    "Description": "VoiceBase integration for Amazon Connect (qs-1oaucuqq9)",
     "Metadata": {
         "AWS::CloudFormation::Interface": {
             "ParameterGroups": [
                 {
                     "Label": {
-                        "default": "Amazon Connect Instance"
+                        "default": "Amazon Connect configuration"
                     },
                     "Parameters": [
                         "ConnectS3BucketName",
@@ -15,7 +15,7 @@
                 },
                 {
                     "Label": {
-                        "default": "VoiceBase API Gateway"
+                        "default": "VoiceBase configuration"
                     },
                     "Parameters": [
                         "VoicebaseApiToken",
@@ -28,7 +28,7 @@
                 },
                 {
                     "Label": {
-                        "default": "Amazon Connect Quick Start"
+                        "default": "Amazon Connect Quick Start configuration"
                     },
                     "Parameters": [
                         "QSS3BucketName",
@@ -115,7 +115,7 @@
         "OutputS3BucketName": {
             "Type": "String",
             "AllowedPattern": "^[0-9a-zA-Z]+([0-9a-zA-Z-.]*[0-9a-zA-Z])*$",
-            "Description": "S3 bucket where the transcription output will be stored"
+            "Description": "S3 bucket where the transcription output will be stored. NOTE: It's recommended NOT to use your connect integration S3 bucket for output."
         },
         "OutputS3KeyPrefix": {
             "Type": "String",
@@ -1043,6 +1043,24 @@
         }
     },
     "Outputs": {
+        "VoicebaseTokenValidationLambda": {
+            "Description": "VoiceBase token validation Lambda function.",
+            "Value": {
+                "Fn::GetAtt": "VoicebaseTokenValidationLambda.Arn"
+            }
+        },
+        "ConnectToVoicebaseLambda": {
+            "Description": "VoiceBase integration Lambda function.",
+            "Value": {
+                "Fn::GetAtt": "ConnectToVoicebaseLambda.Arn"
+            }
+        },
+        "VoicebaseCallbackLambda": {
+            "Description": "VoiceBase vall back Lambda function.",
+            "Value": {
+                "Fn::GetAtt": "VoicebaseCallbackLambda.Arn"
+            }
+        },
         "VoicebaseTranscriptionStream": {
             "Description": "VoiceBase Transcription Stream.Transcription delivered from VoiceBase.",
             "Value": {
