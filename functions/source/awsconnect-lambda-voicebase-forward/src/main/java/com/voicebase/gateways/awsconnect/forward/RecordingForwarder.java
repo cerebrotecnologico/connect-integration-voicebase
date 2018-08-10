@@ -2,13 +2,12 @@
  * Copyright 2016-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved. Licensed under the
  * Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with
  * the License. A copy of the License is located at
- * 
+ *
  * http://aws.amazon.com/apache2.0/
- * 
+ *
  * or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
- *
  */
 package com.voicebase.gateways.awsconnect.forward;
 
@@ -17,6 +16,7 @@ import static com.voicebase.gateways.awsconnect.ConfigUtil.getIntSetting;
 import static com.voicebase.gateways.awsconnect.ConfigUtil.getLongSetting;
 import static com.voicebase.gateways.awsconnect.ConfigUtil.getStringListSetting;
 import static com.voicebase.gateways.awsconnect.ConfigUtil.getStringSetting;
+import static com.voicebase.gateways.awsconnect.VoiceBaseAttributeExtractor.getBooleanParameter;
 import static com.voicebase.gateways.awsconnect.VoiceBaseAttributeExtractor.getS3RecordingLocation;
 
 import java.io.IOException;
@@ -34,7 +34,7 @@ import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
-import com.voicebase.gateways.awsconnect.BeanFactory;
+import com.voicebase.gateways.awsconnect.VoiceBaseAttributeExtractor;
 import com.voicebase.gateways.awsconnect.lambda.Lambda;
 import com.voicebase.sdk.v3.MediaProcessingRequest;
 import com.voicebase.sdk.v3.ServiceFactory;
@@ -68,21 +68,31 @@ public class RecordingForwarder {
   private List<String> additionalCallbackUrls;
 
   private final AmazonS3 s3Client;
-  private final VoiceBaseClient voicebaseClient;
+  private VoiceBaseClient voicebaseClient;
   private CallbackProvider callbackProvider;
 
+
+  RecordingForwarder() {
+    this(System.getenv());
+  }
+
   public RecordingForwarder(Map<String, String> env) {
-    voicebaseClient = BeanFactory.voicebaseClient();
     s3Client = AmazonS3ClientBuilder.defaultClient();
     configure(env);
   }
 
-  public void forwardRequest(Map<String, Object> dataAsMap) {
+  public boolean forwardRequest(Map<String, Object> dataAsMap) {
+    boolean forwarded = false;
     try {
 
       Object externalId = dataAsMap.get(Lambda.KEY_EXTERNAL_ID);
 
       if (externalId != null) {
+
+        if (!shouldProcess(dataAsMap)) {
+          LOGGER.info("CTR with ContactID {} should not be processed, skipping.", externalId);
+          return false;
+        }
 
         MediaProcessingRequestBuilder builder = new MediaProcessingRequestBuilder()
             .withCallbackProvider(callbackProvider).withConfigureSpeakers(configureSpeakers)
@@ -99,26 +109,43 @@ public class RecordingForwarder {
           String parts[] = s3Location.split("/", 2);
           String preSignedUrl = createPresignedUrl(parts[0], parts[1], mediaUrlTtl);
           req.setMediaUrl(preSignedUrl);
-        }
-
-        String mediaId =
-            voicebaseClient.uploadMedia(vbApiToken, req, vbApiRetryAttempts, vbApiRetryDelay);
-        if (mediaId != null) {
-          LOGGER.info("Call ID {} sent for processing; mediaId={}", externalId, mediaId);
+          String mediaId =
+              voicebaseClient.uploadMedia(vbApiToken, req, vbApiRetryAttempts, vbApiRetryDelay);
+          if (mediaId != null) {
+            LOGGER.info("Call ID {} sent for processing; mediaId={}", externalId, mediaId);
+            forwarded = true;
+          }
+        } else {
+          LOGGER.warn("CTR {} doesn't contain an audio location. Skipping...", externalId);
         }
       } else {
-        LOGGER.warn("Received record without contact ID, not a CTR record. Skipping...");
+        LOGGER.info("Received record without contact ID, not a CTR record. Skipping...");
       }
-
     } catch (SdkClientException | IllegalArgumentException e) {
-      LOGGER.warn("Skipping record, unable to generate pre-signed URL.");
+      LOGGER.warn("Skipping record, unable to generate pre-signed URL.", e);
     } catch (IOException e) {
       LOGGER.error("Error sending media to VB API", e);
     } catch (Exception e) {
       LOGGER.error("Unexpected error", e);
     }
-
+    return forwarded;
   }
+
+
+  boolean shouldProcess(Map<String, Object> dataAsMap) {
+    try {
+      VoiceBaseAttributeExtractor mc = VoiceBaseAttributeExtractor.fromAwsInputData(dataAsMap);
+      if (!getBooleanParameter(mc.immutableSubset(Lambda.VB_ATTR), Lambda.VB_ATTR_ENABLE, true)) {
+        LOGGER.info("VoiceBase processing disabled by flow.");
+        return false;
+      }
+    } catch (Exception e) {
+      LOGGER.warn(
+          "Can't read VoiceBase attributes to determine if VoiceBase processing is enabled. Trying to process anyways...");
+    }
+    return true;
+  }
+
 
   /**
    * Create a pre-signed URL for given S3 bucket, object key and time to live.
@@ -141,7 +168,6 @@ public class RecordingForwarder {
     }
 
     long msec = System.currentTimeMillis() + ttl;
-
     Date expiration = new Date(msec);
 
     GeneratePresignedUrlRequest generatePresignedUrlRequest =
@@ -194,8 +220,7 @@ public class RecordingForwarder {
     callbackProvider.setCallbackUrl(callbackUrl);
     callbackProvider.setAdditionalCallbackUrls(additionalCallbackUrls);
 
-    voicebaseClient.setMediaService(ServiceFactory.mediaService(vbApiUrl, vbApiClientLogLevel));
-
+    voicebaseClient = ServiceFactory.voicebaseClient(vbApiUrl, vbApiClientLogLevel);
   }
 
 }

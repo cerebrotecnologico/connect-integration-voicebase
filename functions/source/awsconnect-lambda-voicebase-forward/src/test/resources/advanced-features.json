@@ -1,0 +1,29 @@
+{
+  "speechModel" : {
+    "features" : [ "voiceFeatures", "advancedPunctuation" ]
+  },
+  "ingest" : {
+    "channels" : [ {
+      "speakerName" : "left"
+    }, {
+      "speakerName" : "right"
+    } ]
+  },
+  "prediction" : { },
+  "knowledge" : {
+    "enableDiscovery" : true,
+    "enableExternalDataSources" : true
+  },
+  "transcript" : { },
+  "publish" : {
+    "callbacks" : [ {
+      "url" : "http://example.com",
+      "method" : "post"
+    } ]
+  },
+  "labs" : {
+    "voiceActivity" : {
+      "enableVoiceActivity" : true
+    }
+  }
+}

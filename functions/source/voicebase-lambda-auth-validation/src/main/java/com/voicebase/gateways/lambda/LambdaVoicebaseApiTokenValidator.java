@@ -2,13 +2,12 @@
  * Copyright 2016-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved. Licensed under the
  * Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with
  * the License. A copy of the License is located at
- * 
+ *
  * http://aws.amazon.com/apache2.0/
- * 
+ *
  * or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
- *
  */
 package com.voicebase.gateways.lambda;
 
@@ -33,7 +32,7 @@ import com.voicebase.gateways.awsconnect.lambda.CustomResourceRequest;
 import com.voicebase.gateways.awsconnect.lambda.CustomResourceResponse;
 import com.voicebase.gateways.awsconnect.lambda.CustomResourceResponse.Status;
 import com.voicebase.gateways.awsconnect.lambda.Lambda;
-import com.voicebase.gateways.awsconnect.lambda.LambdaProcessor;
+import com.voicebase.gateways.awsconnect.lambda.LambdaHandler;
 import com.voicebase.sdk.v3.ServiceFactory;
 import com.voicebase.sdk.v3.VoiceBaseClient;
 
@@ -43,15 +42,16 @@ import com.voicebase.sdk.v3.VoiceBaseClient;
  * @author Volker Kueffel <volker@voicebase.com>
  *
  */
-public class LambdaVoicebaseApiTokenValidator extends LambdaProcessor
+public class LambdaVoicebaseApiTokenValidator extends LambdaHandler
     implements RequestHandler<InputStream, Void> {
 
   private static final Logger LOGGER =
       LoggerFactory.getLogger(LambdaVoicebaseApiTokenValidator.class);
-  private static final ObjectMapper OM = new ObjectMapper();
 
-  private final VoiceBaseClient voicebaseClient;
+  private VoiceBaseClient voicebaseClient;
+  private ObjectMapper objectMapper;
   private String vbApiToken;
+
 
 
   public LambdaVoicebaseApiTokenValidator() {
@@ -59,8 +59,7 @@ public class LambdaVoicebaseApiTokenValidator extends LambdaProcessor
   }
 
   LambdaVoicebaseApiTokenValidator(Map<String, String> env) {
-    voicebaseClient = BeanFactory.voicebaseClient();
-    configure(env);
+    super(env);
   }
 
   @Override
@@ -69,7 +68,7 @@ public class LambdaVoicebaseApiTokenValidator extends LambdaProcessor
     // AWS OM doesn't honor annotations, need to deserialize here due to upper case property names
     CustomResourceRequest request;
     try {
-      request = OM.readValue(rawRequest, CustomResourceRequest.class);
+      request = objectMapper.readValue(rawRequest, CustomResourceRequest.class);
       doHandleRequest(request, context);
     } catch (Exception e) {
       LOGGER.error("Unable to read custom resource request", e);
@@ -104,7 +103,7 @@ public class LambdaVoicebaseApiTokenValidator extends LambdaProcessor
 
 
   private void validateToken(CustomResourceRequest request, CustomResourceResponse response) {
-    LOGGER.info("Validation VoiceBase API token...");
+    LOGGER.info("Validating VoiceBase API token...");
     try {
       voicebaseClient.getResources(vbApiToken);
       response.setStatus(Status.SUCCESS);
@@ -130,7 +129,7 @@ public class LambdaVoicebaseApiTokenValidator extends LambdaProcessor
       connection.setDoOutput(true);
       connection.setRequestMethod("PUT");
       OutputStreamWriter out = new OutputStreamWriter(connection.getOutputStream());
-      String output = OM.writeValueAsString(response);
+      String output = objectMapper.writeValueAsString(response);
       LOGGER.info("Returning CF response: {}", output);
       out.write(output);
       out.close();
@@ -146,17 +145,14 @@ public class LambdaVoicebaseApiTokenValidator extends LambdaProcessor
 
 
   protected void configure(Map<String, String> env) {
-    configureLogging(env);
+    objectMapper = BeanFactory.objectMapper();
     vbApiToken = getStringSetting(env, Lambda.ENV_API_TOKEN, null);
 
     String vbApiUrl = getStringSetting(env, Lambda.ENV_API_URL, Lambda.DEFAULT_V3_API_URL);
     String vbApiClientLogLevel =
         getStringSetting(env, Lambda.ENV_API_CLIENT_LOGLEVEL, Lambda.DEFAULT_API_CLIENT_LOG_LEVEL);
 
-    voicebaseClient
-        .setVoicebaseService(ServiceFactory.voiceBaseService(vbApiUrl, vbApiClientLogLevel));
-
+    voicebaseClient = ServiceFactory.voicebaseClient(vbApiUrl, vbApiClientLogLevel);
   }
-
-
+  
 }
