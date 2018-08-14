@@ -41,7 +41,7 @@
                     "default": "Call Recording Amazon S3 Bucket Name"
                 },
                 "VoicebaseApiToken": {
-                    "default": "VoiceBase API Token"
+                    "default": "VoiceBase Bearer Token"
                 },
                 "VoicebaseEnableKnowledgeDiscovery": {
                     "default": "Keyword/Topic extraction"
@@ -87,7 +87,8 @@
         },
         "VoicebaseApiToken": {
             "Type": "String",
-            "Description": "Your VoiceBase API Token from the VoiceBase Developer Portal"
+            "Description": "Bearer token used for API authorization to your VoiceBase account",
+            "NoEcho": "true"
         },
         "VoicebaseEnableKnowledgeDiscovery": {
             "AllowedValues": [

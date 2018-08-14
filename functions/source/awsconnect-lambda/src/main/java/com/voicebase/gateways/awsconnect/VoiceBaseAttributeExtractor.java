@@ -1,17 +1,13 @@
 /**
- * Copyright 2016-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * Licensed under the Apache License, Version 2.0 (the "License"). You may not
- * use this file except in compliance with the License. A copy of the License is
- * located at 
- * 
- *      http://aws.amazon.com/apache2.0/ 
- *      
- * or in the "license" file
- * accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * Copyright 2016-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved. Licensed under the
+ * Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with
+ * the License. A copy of the License is located at
  *
+ * http://aws.amazon.com/apache2.0/
+ *
+ * or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
  */
 package com.voicebase.gateways.awsconnect;
 
@@ -42,17 +38,28 @@ import com.voicebase.gateways.awsconnect.lambda.Lambda;
 public final class VoiceBaseAttributeExtractor extends MapConfiguration {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(VoiceBaseAttributeExtractor.class);
+  
+  
+  @SuppressWarnings("unchecked")
+  public static VoiceBaseAttributeExtractor fromAwsInputData(Map<String, Object>awsInputData) {
+    if (awsInputData==null) {
+      return null;
+    }
+    Object vbAttr=awsInputData.get(Lambda.KEY_ATTRIBUTES);
+    if (vbAttr==null || !(vbAttr instanceof Map)) {
+      return null;
+    }
+    return new VoiceBaseAttributeExtractor((Map<String, ?>) vbAttr);
+  }
 
   /**
    * Extract string list from configuration.
    * <p/>
-   * Will either return a list of strings or null, never an empty list. Empty
-   * list entries are skipped. All entries are trimmed.
+   * Will either return a list of strings or null, never an empty list. Empty list entries are
+   * skipped. All entries are trimmed.
    * 
-   * @param attr
-   *          configuration
-   * @param key
-   *          configuration key
+   * @param attr configuration
+   * @param key configuration key
    * 
    * @return list of strings extracted from parameter or null.
    * 
@@ -90,20 +97,18 @@ public final class VoiceBaseAttributeExtractor extends MapConfiguration {
    * <p/>
    * Result string is trimmed.
    * 
-   * @param attr
-   *          configuration
-   * @param key
-   *          configuration key
+   * @param attr configuration
+   * @param key configuration key
    * 
-   * @return parameter value or null if no such key or value is empty or the
-   *         pre-defined null-string
+   * @return parameter value or null if no such key or value is empty or the pre-defined null-string
    * 
    * @see KinesisRecordProcessor#Lambda.VB_CONFIG_NULL_STRING
    */
   public static String getStringParameter(ImmutableConfiguration attr, String key) {
     if (attr != null && attr.containsKey(key)) {
       String param = attr.getString(key, null);
-      if (!StringUtils.isEmpty(param) && !StringUtils.equalsIgnoreCase(param, Lambda.VB_CONFIG_NULL_STRING)) {
+      if (!StringUtils.isEmpty(param)
+          && !StringUtils.equalsIgnoreCase(param, Lambda.VB_CONFIG_NULL_STRING)) {
         return StringUtils.trimToNull(param);
       }
     }
@@ -124,6 +129,15 @@ public final class VoiceBaseAttributeExtractor extends MapConfiguration {
     return null;
   }
 
+  public static boolean getBooleanParameter(ImmutableConfiguration attr, String key,
+      boolean defaultValue) {
+    Boolean bool = getBooleanParameter(attr, key);
+    if (bool == null) {
+      return defaultValue;
+    }
+    return bool.booleanValue();
+  }
+
   public static String getVoicebaseAttributeName(String... levels) {
     if (levels == null) {
       return null;
@@ -133,7 +147,7 @@ public final class VoiceBaseAttributeExtractor extends MapConfiguration {
     allLevels.addAll(Lists.newArrayList(levels));
     return StringUtils.join(allLevels, Lambda.VB_CONFIG_DELIMITER);
   }
-  
+
   @SuppressWarnings("unchecked")
   public static String getS3RecordingLocation(Map<String, Object> dataAsMap) {
     if (dataAsMap == null) {
@@ -151,7 +165,8 @@ public final class VoiceBaseAttributeExtractor extends MapConfiguration {
       if (s3Location == null) {
         Map<String, Object> attributes = (Map<String, Object>) dataAsMap.get(Lambda.KEY_ATTRIBUTES);
         if (attributes != null) {
-          s3Location = (String) attributes.get(getVoicebaseAttributeName(Lambda.VB_ATTR_RECORDING_LOCATION));
+          s3Location =
+              (String) attributes.get(getVoicebaseAttributeName(Lambda.VB_ATTR_RECORDING_LOCATION));
         }
       }
     } catch (Exception e) {
@@ -162,6 +177,7 @@ public final class VoiceBaseAttributeExtractor extends MapConfiguration {
 
   public VoiceBaseAttributeExtractor(Map<String, ?> map) {
     super(map);
+    setThrowExceptionOnMissing(false);
   }
 
   public Configuration subset(String prefix) {

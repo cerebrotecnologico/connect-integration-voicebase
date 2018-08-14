@@ -1,17 +1,13 @@
 /**
- * Copyright 2016-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * Licensed under the Apache License, Version 2.0 (the "License"). You may not
- * use this file except in compliance with the License. A copy of the License is
- * located at 
- * 
- *      http://aws.amazon.com/apache2.0/ 
- *      
- * or in the "license" file
- * accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * Copyright 2016-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved. Licensed under the
+ * Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with
+ * the License. A copy of the License is located at
  *
+ * http://aws.amazon.com/apache2.0/
+ *
+ * or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
  */
 package com.voicebase.gateways.awsconnect.forward;
 
@@ -27,51 +23,41 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.configuration2.ImmutableConfiguration;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
-import com.voicebase.api.model.VbAudioRedactorConfiguration;
-import com.voicebase.api.model.VbCallbackConfiguration;
-import com.voicebase.api.model.VbChannelConfiguration;
-import com.voicebase.api.model.VbClassifierConfiguration;
-import com.voicebase.api.model.VbConfiguration;
-import com.voicebase.api.model.VbConfiguration.VbConfigurationBuilder;
-import com.voicebase.api.model.VbContentFilteringConfiguration;
-import com.voicebase.api.model.VbDetectorConfiguration;
-import com.voicebase.api.model.VbFormattingConfiguration;
-import com.voicebase.api.model.VbHttpMethodEnum;
-import com.voicebase.api.model.VbIncludeTypeEnum;
-import com.voicebase.api.model.VbIngestConfiguration;
-import com.voicebase.api.model.VbIngestConfiguration.VbIngestConfigurationBuilder;
-import com.voicebase.api.model.VbKnowledgeConfiguration;
-import com.voicebase.api.model.VbLabsConfiguration;
-import com.voicebase.api.model.VbKnowledgeConfiguration.VbKnowledgeConfigurationBuilder;
-import com.voicebase.api.model.VbLabsConfiguration.VbLabsConfigurationBuilder;
-import com.voicebase.api.model.VbMetadata;
-import com.voicebase.api.model.VbMetricGroupConfiguration;
-import com.voicebase.api.model.VbMetricGroupConfiguration.VbMetricGroupConfigurationBuilder;
-import com.voicebase.api.model.VbParameter;
-import com.voicebase.api.model.VbPredictionConfiguration;
-import com.voicebase.api.model.VbPredictionConfiguration.VbPredictionConfigurationBuilder;
-import com.voicebase.api.model.VbPriorityEnum;
-import com.voicebase.api.model.VbPublishConfiguration;
-import com.voicebase.api.model.VbPublishConfiguration.VbPublishConfigurationBuilder;
-import com.voicebase.api.model.VbRedactorConfiguration;
-import com.voicebase.api.model.VbSpeechModelConfiguration;
-import com.voicebase.api.model.VbSpeechModelConfiguration.VbSpeechModelConfigurationBuilder;
-import com.voicebase.api.model.VbSpottingConfiguration;
-import com.voicebase.api.model.VbSpottingGroupConfiguration;
-import com.voicebase.api.model.VbTranscriptConfiguration;
-import com.voicebase.api.model.VbTranscriptConfiguration.VbTranscriptConfigurationBuilder;
-import com.voicebase.api.model.VbTranscriptRedactorConfiguration;
-import com.voicebase.api.model.VbVocabularyConfiguration;
-import com.voicebase.api.model.VbVocabularyConfiguration.VbVocabularyConfigurationBuilder;
-import com.voicebase.api.model.VbVocabularyTermConfiguration;
-import com.voicebase.api.model.VbVoiceActivityConfiguration;
+import com.voicebase.v3client.datamodel.VbAudioRedactorConfiguration;
+import com.voicebase.v3client.datamodel.VbCallbackConfiguration;
+import com.voicebase.v3client.datamodel.VbChannelConfiguration;
+import com.voicebase.v3client.datamodel.VbClassifierConfiguration;
+import com.voicebase.v3client.datamodel.VbConfiguration;
+import com.voicebase.v3client.datamodel.VbContentFilteringConfiguration;
+import com.voicebase.v3client.datamodel.VbDetectorConfiguration;
+import com.voicebase.v3client.datamodel.VbFormattingConfiguration;
+import com.voicebase.v3client.datamodel.VbHttpMethodEnum;
+import com.voicebase.v3client.datamodel.VbIncludeTypeEnum;
+import com.voicebase.v3client.datamodel.VbIngestConfiguration;
+import com.voicebase.v3client.datamodel.VbKnowledgeConfiguration;
+import com.voicebase.v3client.datamodel.VbMetadata;
+import com.voicebase.v3client.datamodel.VbMetricGroupConfiguration;
+import com.voicebase.v3client.datamodel.VbParameter;
+import com.voicebase.v3client.datamodel.VbPredictionConfiguration;
+import com.voicebase.v3client.datamodel.VbPriorityEnum;
+import com.voicebase.v3client.datamodel.VbPublishConfiguration;
+import com.voicebase.v3client.datamodel.VbRedactorConfiguration;
+import com.voicebase.v3client.datamodel.VbSpeechModelConfiguration;
+import com.voicebase.v3client.datamodel.VbSpottingConfiguration;
+import com.voicebase.v3client.datamodel.VbSpottingGroupConfiguration;
+import com.voicebase.v3client.datamodel.VbTranscriptConfiguration;
+import com.voicebase.v3client.datamodel.VbTranscriptRedactorConfiguration;
+import com.voicebase.v3client.datamodel.VbVocabularyConfiguration;
+import com.voicebase.v3client.datamodel.VbVocabularyTermConfiguration;
 import com.voicebase.gateways.awsconnect.VoiceBaseAttributeExtractor;
 import com.voicebase.gateways.awsconnect.lambda.Lambda;
 import com.voicebase.sdk.v3.MediaProcessingRequest;
+import java.util.LinkedHashMap;
 
 /**
  * 
@@ -85,13 +71,19 @@ public class MediaProcessingRequestBuilder {
   static final String SPEECH_FEATURE_VOICE = "voiceFeatures";
   static final String SPEECH_FEATURE_ADVANCED_PUNCTUATION = "advancedPunctuation";
   static final String REDACTION_REPLACEMENT = "[redacted]";
-  static final Float REDACTION_GAIN = new Float(0.5f);
-  static final Integer REDACTION_TONE = new Integer(270);
+  static final Float REDACTION_GAIN = 0.5f;
+  static final Integer REDACTION_TONE = 270;
   static final String DETECTOR_NAME_PCI = "PCI";
   static final String DETECTOR_PCI_PARAM_DETECTION_LEVEL_VALUE = "probableNumbers";
   static final String DETECTOR_PCI_PARAM_DETECTION_LEVEL_NAME = "detectionLevel";
+  static final String DETECTOR_NAME_NUMBER = "Number";
 
   private Map<String, Object> awsInputData;
+
+  private static final VbRedactorConfiguration DEFAULT_REDACTOR_CONFIG =
+      new VbRedactorConfiguration()
+          .transcript(new VbTranscriptRedactorConfiguration().replacement(REDACTION_REPLACEMENT))
+          .audio(new VbAudioRedactorConfiguration().tone(REDACTION_TONE).gain(REDACTION_GAIN));
 
   private boolean predictionsEnabled = true;
   private boolean knowledgeDiscoveryEnabled = false;
@@ -108,6 +100,8 @@ public class MediaProcessingRequestBuilder {
   private VbMetadata metaData;
   private MediaProcessingRequest request;
 
+
+
   public void setAwsInputData(Map<String, Object> dataAsMap) {
     this.awsInputData = dataAsMap;
   }
@@ -115,6 +109,10 @@ public class MediaProcessingRequestBuilder {
   public MediaProcessingRequestBuilder withAwsInputData(Map<String, Object> dataAsMap) {
     setAwsInputData(dataAsMap);
     return this;
+  }
+  
+  Map<String, Object> getAwsInputData() {
+    return this.awsInputData;
   }
 
   public void setPredictionsEnabled(boolean predictionsEnabled) {
@@ -142,7 +140,8 @@ public class MediaProcessingRequestBuilder {
     this.advancedPunctuationEnabled = advancedPunctuationEnabled;
   }
 
-  public MediaProcessingRequestBuilder withAdvancedPunctuationEnabled(boolean advancedPunctuationEnabled) {
+  public MediaProcessingRequestBuilder withAdvancedPunctuationEnabled(
+      boolean advancedPunctuationEnabled) {
     setAdvancedPunctuationEnabled(advancedPunctuationEnabled);
     return this;
   }
@@ -217,110 +216,140 @@ public class MediaProcessingRequestBuilder {
   }
 
   private VbMetadata createMetaData() {
-    return VbMetadata.builder().externalId(externalId).extended(awsInputData).build();
-
+    VbMetadata vbMetadata = new VbMetadata();
+    vbMetadata.setExternalId(externalId);
+    vbMetadata.setExtended(awsInputData);
+    return vbMetadata;
   }
 
   /**
    * Create VB configuration out of Lily message.
    * <p/>
-   * NOTE: As a side effect some of the attributes in the map are rewritten with
-   * expanded lists.
+   * NOTE: As a side effect some of the attributes in the map are rewritten with expanded lists.
    * 
    * 
    * @return VB configuration
    */
   private VbConfiguration createConfiguration() {
 
-    VbConfigurationBuilder configBuilder = VbConfiguration.builder();
-    VbPublishConfigurationBuilder publishConfigBuilder = VbPublishConfiguration.builder();
-    VbTranscriptConfigurationBuilder transcriptConfigBuilder = VbTranscriptConfiguration.builder();
-    VbIngestConfigurationBuilder ingestConfigBuilder = VbIngestConfiguration.builder();
-    VbSpeechModelConfigurationBuilder speechConfigBuilder = VbSpeechModelConfiguration.builder();
-    VbPredictionConfigurationBuilder predictionConfigBuilder = VbPredictionConfiguration.builder();
-    VbKnowledgeConfigurationBuilder knowledgeConfigBuilder = VbKnowledgeConfiguration.builder()
-        .enableDiscovery(Boolean.valueOf(knowledgeDiscoveryEnabled));
-    VbLabsConfigurationBuilder labsConfigBuilder = VbLabsConfiguration.builder();
+    VbConfiguration vbConfiguration = new VbConfiguration();
+    VbIngestConfiguration vbIngestConfiguration = new VbIngestConfiguration();
+    VbTranscriptConfiguration vbTranscriptConfiguration = new VbTranscriptConfiguration();
+    VbKnowledgeConfiguration vbKnowledgeConfiguration = new VbKnowledgeConfiguration();
+    vbKnowledgeConfiguration.enableDiscovery(knowledgeDiscoveryEnabled);
+    VbSpeechModelConfiguration vbSpeechModelConfiguration = new VbSpeechModelConfiguration();
+    VbPublishConfiguration vbPublishConfiguration = new VbPublishConfiguration();
+    VbPredictionConfiguration vbPredictionConfiguration = new VbPredictionConfiguration();
+
+    // speakers
+    if (configureSpeakers) {
+      VbChannelConfiguration leftChannelConfig =
+          new VbChannelConfiguration().speakerName(leftSpeakerName);
+      VbChannelConfiguration rightChannelConfig =
+          new VbChannelConfiguration().speakerName(rightSpeakerName);
+      vbIngestConfiguration.channels(Lists.newArrayList(leftChannelConfig, rightChannelConfig));
+    }
 
     ArrayList<String> speechFeatures = new ArrayList<>();
-    speechConfigBuilder.features(speechFeatures);
-
-    labsConfigBuilder.voiceActivity(VbVoiceActivityConfiguration.builder().enableVoiceActivity(Boolean.TRUE).build());
     speechFeatures.add(SPEECH_FEATURE_VOICE);
     if (advancedPunctuationEnabled) {
       speechFeatures.add(SPEECH_FEATURE_ADVANCED_PUNCTUATION);
     }
+    vbSpeechModelConfiguration.features(speechFeatures);
+
 
     // callbacks
     List<VbIncludeTypeEnum> includes = new ArrayList<>();
     if (callbackProvider.hasIncludes()) {
       for (String include : callbackProvider.getIncludes()) {
-        includes.add(VbIncludeTypeEnum.fromValue(include.toUpperCase()));
+        if (!StringUtils.isEmpty(include)) {
+          VbIncludeTypeEnum includeEnum = VbIncludeTypeEnum.fromValue(include);
+          if (includeEnum != null) {
+            includes.add(includeEnum);
+          }
+        }
       }
     }
 
     List<VbCallbackConfiguration> callbacks = new ArrayList<>();
-    callbacks.add(VbCallbackConfiguration.builder().url(callbackProvider.getCallbackUrl())
-        .method(VbHttpMethodEnum.valueOf(callbackProvider.getCallbackMethod())).include(includes).build());
+    callbacks.add((new VbCallbackConfiguration()).url(callbackProvider.getCallbackUrl())
+        .method(VbHttpMethodEnum.valueOf(callbackProvider.getCallbackMethod())).include(includes));
     if (callbackProvider.hasAdditionalCallbackUrls()) {
       for (String callback : callbackProvider.getAdditionalCallbackUrls()) {
-        callbacks.add(VbCallbackConfiguration.builder().url(callback)
-            .method(VbHttpMethodEnum.valueOf(callbackProvider.getCallbackMethod())).include(includes).build());
+        callbacks.add(new VbCallbackConfiguration().url(callback)
+            .method(VbHttpMethodEnum.valueOf(callbackProvider.getCallbackMethod()))
+            .include(includes));
       }
     }
-    publishConfigBuilder.callbacks(callbacks);
+    vbPublishConfiguration.callbacks(callbacks);
+
+    Map<String, Object> vbLabsConfiguration = new LinkedHashMap<>();
+    Map<String, Object> vbVoiceActivityConfiguration = new LinkedHashMap<>();
+    vbVoiceActivityConfiguration.put("enableVoiceActivity", Boolean.TRUE);
+    vbLabsConfiguration.put("voiceActivity", vbVoiceActivityConfiguration);
 
     @SuppressWarnings("unchecked")
     Map<String, Object> attributes = (Map<String, Object>) awsInputData.get(Lambda.KEY_ATTRIBUTES);
     if (attributes != null && !attributes.isEmpty()) {
       VoiceBaseAttributeExtractor mc = new VoiceBaseAttributeExtractor(attributes);
-      mc.setThrowExceptionOnMissing(false);
 
       ImmutableConfiguration vbAttrs = mc.immutableSubset(Lambda.VB_ATTR);
 
-      Boolean redactPCI = getBooleanParameter(vbAttrs, Lambda.VB_ATTR_PCIREDACT);
-      if (redactPCI != null && redactPCI.booleanValue()) {
-        VbDetectorConfiguration detectorConfig = VbDetectorConfiguration.builder().detectorName(DETECTOR_NAME_PCI)
-            .parameters(
-                Collections.singletonList(VbParameter.builder().parameter(DETECTOR_PCI_PARAM_DETECTION_LEVEL_NAME)
-                    .value(DETECTOR_PCI_PARAM_DETECTION_LEVEL_VALUE).build()))
-            .redactor(VbRedactorConfiguration.builder()
-                .transcript(VbTranscriptRedactorConfiguration.builder().replacement(REDACTION_REPLACEMENT).build())
-                .audio(VbAudioRedactorConfiguration.builder().tone(REDACTION_TONE).gain(REDACTION_GAIN).build())
-                .build())
-            .build();
-        predictionConfigBuilder.detectors(Collections.singletonList(detectorConfig));
+      List<VbDetectorConfiguration> detectors = new ArrayList<>();
 
+      boolean redactPCI = getBooleanParameter(vbAttrs, Lambda.VB_ATTR_PCIREDACT,
+          Lambda.DEFAULT_ENABLE_PCI_REDACTION);
+      if (redactPCI) {
+        VbDetectorConfiguration pciDetectorConfiguration =
+            new VbDetectorConfiguration().detectorName(DETECTOR_NAME_PCI)
+                .parameters(Collections.singletonList(
+                    new VbParameter().parameter(DETECTOR_PCI_PARAM_DETECTION_LEVEL_NAME)
+                        .value(DETECTOR_PCI_PARAM_DETECTION_LEVEL_VALUE)))
+                .redactor(DEFAULT_REDACTOR_CONFIG);
+        detectors.add(pciDetectorConfiguration);
       }
+
+      boolean redactNumbers = getBooleanParameter(vbAttrs, Lambda.VB_ATTR_NUMBERREDACT,
+          Lambda.DEFAULT_ENABLE_NUMBER_REDACTION);
+      if (redactNumbers) {
+        VbDetectorConfiguration numberDetectorConfiguration =
+            new VbDetectorConfiguration().detectorName(DETECTOR_NAME_NUMBER).redactor(DEFAULT_REDACTOR_CONFIG);
+        detectors.add(numberDetectorConfiguration);
+      }
+
+      if (!detectors.isEmpty()) {
+        vbPredictionConfiguration.detectors(detectors);
+      }
+
 
       String priorityString = getStringParameter(vbAttrs, Lambda.VB_ATTR_PRIORIY);
       try {
         VbPriorityEnum p = VbPriorityEnum.fromValue(priorityString);
-        if (p == null || p == VbPriorityEnum.NOT_SUPPORTED) {
+        if (p == null) {
           p = VbPriorityEnum.NORMAL;
         }
-        configBuilder.priority(p);
+        vbConfiguration.priority(p);
       } catch (Exception e) {
-        LOGGER.error("Unknown priority '{}' for ext ID {}", vbAttrs.getString(Lambda.VB_ATTR_PRIORIY),
-            awsInputData.get(Lambda.KEY_EXTERNAL_ID));
-        configBuilder.priority(VbPriorityEnum.NORMAL);
+        LOGGER.error("Unknown priority '{}' for ext ID {}",
+            vbAttrs.getString(Lambda.VB_ATTR_PRIORIY), awsInputData.get(Lambda.KEY_EXTERNAL_ID));
+        vbConfiguration.priority(VbPriorityEnum.NORMAL);
       }
 
       ImmutableConfiguration transcriptAttr = vbAttrs.immutableSubset(Lambda.VB_ATTR_TRANSCRIPT);
 
-      transcriptConfigBuilder.formatting(VbFormattingConfiguration.builder()
-          .enableNumberFormatting(getBooleanParameter(transcriptAttr, Lambda.VB_ATTR_TRANSCRIPT_NUMBER_FORMAT))
-          .build());
+      vbTranscriptConfiguration.formatting(new VbFormattingConfiguration().enableNumberFormatting(
+          getBooleanParameter(transcriptAttr, Lambda.VB_ATTR_TRANSCRIPT_NUMBER_FORMAT)));
 
-      transcriptConfigBuilder.contentFiltering(VbContentFilteringConfiguration.builder()
-          .enableProfanityFiltering(getBooleanParameter(transcriptAttr, Lambda.VB_ATTR_TRANSCRIPT_SWEARWORD_FILTER))
-          .build());
+      vbTranscriptConfiguration
+          .contentFiltering(new VbContentFilteringConfiguration().enableProfanityFiltering(
+              getBooleanParameter(transcriptAttr, Lambda.VB_ATTR_TRANSCRIPT_SWEARWORD_FILTER)));
 
       // knowledge discovery
       ImmutableConfiguration knowledgeAttr = vbAttrs.immutableSubset(Lambda.VB_ATTR_KNOWLEDGE);
-      Boolean knowledgeDiscoveryEnabledAttr = getBooleanParameter(knowledgeAttr, Lambda.VB_ATTR_KNOWLEDGE_DISCOVERY);
+      Boolean knowledgeDiscoveryEnabledAttr =
+          getBooleanParameter(knowledgeAttr, Lambda.VB_ATTR_KNOWLEDGE_DISCOVERY);
       if (knowledgeDiscoveryEnabledAttr != null) {
-        knowledgeConfigBuilder.enableDiscovery(Boolean.valueOf(knowledgeDiscoveryEnabledAttr));
+        vbKnowledgeConfiguration.enableDiscovery(knowledgeDiscoveryEnabledAttr);
       }
 
       // phrase spotting
@@ -331,32 +360,37 @@ public class MediaProcessingRequestBuilder {
 
         List<VbSpottingGroupConfiguration> spottingGroups = new ArrayList<>();
         for (String groupName : groups) {
-          spottingGroups.add(VbSpottingGroupConfiguration.builder().groupName(groupName).build());
+          spottingGroups.add(new VbSpottingGroupConfiguration().groupName(groupName));
         }
 
-        configBuilder.spotting(VbSpottingConfiguration.builder().groups(spottingGroups).build());
+        vbConfiguration.spotting(new VbSpottingConfiguration().groups(spottingGroups));
 
         // overwrite metadata
-        attributes.put(getVoicebaseAttributeName(Lambda.VB_ATTR_KEYWORDS, Lambda.VB_ATTR_KEYWORDS_GROUPS), groups);
+        attributes.put(
+            getVoicebaseAttributeName(Lambda.VB_ATTR_KEYWORDS, Lambda.VB_ATTR_KEYWORDS_GROUPS),
+            groups);
       }
 
-      speechConfigBuilder.language(getStringParameter(vbAttrs, Lambda.VB_ATTR_LANGUAGE));
+      vbSpeechModelConfiguration.language(getStringParameter(vbAttrs, Lambda.VB_ATTR_LANGUAGE));
 
       // classifiers
       if (predictionsEnabled) {
 
-        ImmutableConfiguration classificationAttr = vbAttrs.immutableSubset(Lambda.VB_ATTR_CLASSIFIER);
-        Set<String> classifierNames = getStringParameterSet(classificationAttr, Lambda.VB_ATTR_CLASSIFIER_NAMES);
+        ImmutableConfiguration classificationAttr =
+            vbAttrs.immutableSubset(Lambda.VB_ATTR_CLASSIFIER);
+        Set<String> classifierNames =
+            getStringParameterSet(classificationAttr, Lambda.VB_ATTR_CLASSIFIER_NAMES);
         if (classifierNames != null && !classifierNames.isEmpty()) {
           List<VbClassifierConfiguration> classifierConfigs = new ArrayList<>();
 
           for (String classifier : classifierNames) {
-            classifierConfigs.add(VbClassifierConfiguration.builder().classifierName(classifier).build());
+            classifierConfigs.add(new VbClassifierConfiguration().classifierName(classifier));
           }
 
-          predictionConfigBuilder.classifiers(classifierConfigs);
+          vbPredictionConfiguration.classifiers(classifierConfigs);
 
-          attributes.put(getVoicebaseAttributeName(Lambda.VB_ATTR_CLASSIFIER, Lambda.VB_ATTR_CLASSIFIER_NAMES),
+          attributes.put(
+              getVoicebaseAttributeName(Lambda.VB_ATTR_CLASSIFIER, Lambda.VB_ATTR_CLASSIFIER_NAMES),
               classifierNames);
         }
       }
@@ -368,31 +402,34 @@ public class MediaProcessingRequestBuilder {
       // vocab terms need to be unique
       Set<String> terms = getStringParameterSet(vocabAttr, Lambda.VB_ATTR_VOCABULARY_TERMS);
       if (terms != null && !terms.isEmpty()) {
-        VbVocabularyConfigurationBuilder vocabularyConfigBuilder = VbVocabularyConfiguration.builder();
+        VbVocabularyConfiguration vbVocabularyConfiguration = new VbVocabularyConfiguration();
         ArrayList<VbVocabularyTermConfiguration> vocabTermConfigs = new ArrayList<>();
         for (String term : terms) {
-          vocabTermConfigs.add(VbVocabularyTermConfiguration.builder().term(term).build());
+          vocabTermConfigs.add(new VbVocabularyTermConfiguration().term(term));
         }
-        vocabularyConfigBuilder.terms(vocabTermConfigs);
-        vocabs.add(vocabularyConfigBuilder.build());
+        vbVocabularyConfiguration.terms(vocabTermConfigs);
+        vocabs.add(vbVocabularyConfiguration);
 
         // overwrite metadata
-        attributes.put(getVoicebaseAttributeName(Lambda.VB_ATTR_VOCABULARY, Lambda.VB_ATTR_VOCABULARY_TERMS), terms);
+        attributes.put(
+            getVoicebaseAttributeName(Lambda.VB_ATTR_VOCABULARY, Lambda.VB_ATTR_VOCABULARY_TERMS),
+            terms);
       }
 
       Set<String> vocabNames = getStringParameterSet(vocabAttr, Lambda.VB_ATTR_VOCABULARY_NAMES);
       if (vocabNames != null && !vocabNames.isEmpty()) {
 
         for (String vocab : vocabNames) {
-          vocabs.add(VbVocabularyConfiguration.builder().vocabularyName(vocab).build());
+          vocabs.add(new VbVocabularyConfiguration().vocabularyName(vocab));
         }
         // overwrite metadata
-        attributes.put(getVoicebaseAttributeName(Lambda.VB_ATTR_VOCABULARY, Lambda.VB_ATTR_VOCABULARY_NAMES),
+        attributes.put(
+            getVoicebaseAttributeName(Lambda.VB_ATTR_VOCABULARY, Lambda.VB_ATTR_VOCABULARY_NAMES),
             vocabNames);
       }
 
       if (!vocabs.isEmpty()) {
-        configBuilder.vocabularies(vocabs);
+        vbConfiguration.vocabularies(vocabs);
       }
 
       // metrics
@@ -401,31 +438,22 @@ public class MediaProcessingRequestBuilder {
       if (metricGroups != null && !metricGroups.isEmpty()) {
         List<VbMetricGroupConfiguration> metricsConfs = new ArrayList<>();
         for (String metricGroupName : metricGroups) {
-          VbMetricGroupConfigurationBuilder metricConfigBuilder = VbMetricGroupConfiguration.builder();
-          metricConfigBuilder.metricGroupName(metricGroupName);
-          metricsConfs.add(metricConfigBuilder.build());
+          VbMetricGroupConfiguration vbMetricGroupConfiguration = new VbMetricGroupConfiguration();
+          vbMetricGroupConfiguration.metricGroupName(metricGroupName);
+          metricsConfs.add(vbMetricGroupConfiguration);
         }
-        configBuilder.metrics(metricsConfs);
-      }
-
-      // speakers
-      if (configureSpeakers) {
-        VbChannelConfiguration leftChannelConfig = VbChannelConfiguration.builder().speakerName(leftSpeakerName)
-            .build();
-        VbChannelConfiguration rightChannelConfig = VbChannelConfiguration.builder().speakerName(rightSpeakerName)
-            .build();
-
-        ingestConfigBuilder.channels(Lists.newArrayList(leftChannelConfig, rightChannelConfig));
+        vbConfiguration.metrics(metricsConfs);
       }
 
     }
 
-    configBuilder.ingest(ingestConfigBuilder.build()).publish(publishConfigBuilder.build())
-        .transcript(transcriptConfigBuilder.build()).speechModel(speechConfigBuilder.build())
-        .prediction(predictionConfigBuilder.build()).knowledge(knowledgeConfigBuilder.build())
-        .labs(labsConfigBuilder.build());
+    vbConfiguration.ingest(vbIngestConfiguration).publish(vbPublishConfiguration)
+        .transcript(vbTranscriptConfiguration).speechModel(vbSpeechModelConfiguration)
+        .prediction(vbPredictionConfiguration).knowledge(vbKnowledgeConfiguration)
+        .labs(vbLabsConfiguration);
 
-    return configBuilder.build();
+
+    return vbConfiguration;
   }
 
 }

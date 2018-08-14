@@ -1,0 +1,61 @@
+{
+  "speechModel" : {
+    "features" : [ "voiceFeatures", "advancedPunctuation" ]
+  },
+  "priority" : "normal",
+  "ingest" : {
+    "channels" : [ {
+      "speakerName" : "left"
+    }, {
+      "speakerName" : "right"
+    } ]
+  },
+  "prediction" : {
+    "detectors" : [ {
+      "detectorName" : "PCI",
+      "parameters" : [ {
+        "parameter" : "detectionLevel",
+        "value" : "probableNumbers"
+      } ],
+      "redactor" : {
+        "transcript" : {
+          "replacement" : "[redacted]"
+        },
+        "audio" : {
+          "tone" : 270,
+          "gain" : 0.5
+        }
+      }
+    }, {
+      "detectorName" : "Number",
+      "redactor" : {
+        "transcript" : {
+          "replacement" : "[redacted]"
+        },
+        "audio" : {
+          "tone" : 270,
+          "gain" : 0.5
+        }
+      }
+    } ]
+  },
+  "knowledge" : {
+    "enableDiscovery" : true,
+    "enableExternalDataSources" : true
+  },
+  "transcript" : {
+    "formatting" : { },
+    "contentFiltering" : { }
+  },
+  "publish" : {
+    "callbacks" : [ {
+      "url" : "http://example.com",
+      "method" : "post"
+    } ]
+  },
+  "labs" : {
+    "voiceActivity" : {
+      "enableVoiceActivity" : true
+    }
+  }
+}

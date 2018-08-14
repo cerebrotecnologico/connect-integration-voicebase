@@ -1,17 +1,13 @@
 /**
- * Copyright 2016-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * Licensed under the Apache License, Version 2.0 (the "License"). You may not
- * use this file except in compliance with the License. A copy of the License is
- * located at 
- * 
- *      http://aws.amazon.com/apache2.0/ 
- *      
- * or in the "license" file
- * accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * Copyright 2016-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved. Licensed under the
+ * Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with
+ * the License. A copy of the License is located at
  *
+ * http://aws.amazon.com/apache2.0/
+ *
+ * or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
  */
 package com.voicebase.sdk.v3;
 
@@ -19,14 +15,14 @@ import java.io.IOException;
 import java.util.Map;
 
 import javax.activation.MimetypesFileTypeMap;
-import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.voicebase.api.model.VbMedia;
+import com.voicebase.v3client.JacksonFactory;
+import com.voicebase.v3client.datamodel.VbMedia;
 
 import retrofit.mime.TypedFile;
 
@@ -38,15 +34,12 @@ import retrofit.mime.TypedFile;
 public class VoiceBaseClient {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(VoiceBaseClient.class);
-  private static final ObjectMapper OM = new ObjectMapper();
+  private static final ObjectMapper OM = JacksonFactory.objectMapper();
 
-  @Inject
   private MediaService mediaService;
 
-  @Inject
   private VoiceBaseService voicebaseService;
 
-  @Inject
   private MimetypesFileTypeMap mimeMap;
 
   public void setMediaService(MediaService mediaService) {
@@ -75,13 +68,14 @@ public class VoiceBaseClient {
     }
 
     if (request.getMediaFile() != null) {
-      TypedFile file = new TypedFile(mimeMap.getContentType(request.getMediaFile()), request.getMediaFile());
+      TypedFile file =
+          new TypedFile(mimeMap.getContentType(request.getMediaFile()), request.getMediaFile());
 
-      result = mediaService.processMedia(authHeaderValue(token), request.getConfiguration(), request.getMetadata(),
-          file);
-    } else if (request.getMediaUrl()!=null){
-      result = mediaService.processMedia(authHeaderValue(token), request.getConfiguration(), request.getMetadata(),
-          request.getMediaUrl());
+      result = mediaService.processMedia(authHeaderValue(token), request.getConfiguration(),
+          request.getMetadata(), file);
+    } else if (request.getMediaUrl() != null) {
+      result = mediaService.processMedia(authHeaderValue(token), request.getConfiguration(),
+          request.getMetadata(), request.getMediaUrl());
     } else {
       throw new IllegalArgumentException("Media information missing.");
     }
@@ -96,8 +90,8 @@ public class VoiceBaseClient {
     return mediaId;
   }
 
-  public String uploadMedia(String token, MediaProcessingRequest request, int retryAttempts, long retryDelay)
-      throws IOException {
+  public String uploadMedia(String token, MediaProcessingRequest request, int retryAttempts,
+      long retryDelay) throws IOException {
 
     int attempt = 0;
     boolean success = false;
@@ -109,7 +103,7 @@ public class VoiceBaseClient {
         mediaId = uploadMedia(token, request);
         success = true;
       } catch (IllegalArgumentException e) {
-        LOGGER.error("Invalid argument.",e);
+        LOGGER.error("Invalid argument.", e);
         throw e;
       } catch (Exception e) {
         // retry
@@ -136,7 +130,8 @@ public class VoiceBaseClient {
   public boolean updateMedia(String token, String mediaId, MediaProcessingRequest request) {
     VbMedia result = null;
     if (request.getMediaFile() != null) {
-      TypedFile file = new TypedFile(mimeMap.getContentType(request.getMediaFile()), request.getMediaFile());
+      TypedFile file =
+          new TypedFile(mimeMap.getContentType(request.getMediaFile()), request.getMediaFile());
 
       result = mediaService.updateMedia(authHeaderValue(token), mediaId, request.getConfiguration(),
           request.getMetadata(), file);
@@ -154,8 +149,8 @@ public class VoiceBaseClient {
     return false;
   }
 
-  public String updateMedia(String token, String mediaId, MediaProcessingRequest request, int retryAttempts,
-      long retryDelay) throws IOException {
+  public String updateMedia(String token, String mediaId, MediaProcessingRequest request,
+      int retryAttempts, long retryDelay) throws IOException {
 
     int attempt = 0;
     boolean success = false;
