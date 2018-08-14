@@ -87,7 +87,8 @@
         },
         "VoicebaseApiToken": {
             "Type": "String",
-            "Description": "Bearer token used for API authorization to your VoiceBase account"
+            "Description": "Bearer token used for API authorization to your VoiceBase account",
+            "NoEcho": "true"
         },
         "VoicebaseEnableKnowledgeDiscovery": {
             "AllowedValues": [
