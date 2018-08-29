@@ -11,18 +11,6 @@
  */
 package com.voicebase.gateways.awsconnect.forward;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.codec.Charsets;
-import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -30,12 +18,18 @@ import com.voicebase.gateways.awsconnect.lambda.Lambda;
 import com.voicebase.sdk.v3.MediaProcessingRequest;
 import com.voicebase.v3client.datamodel.VbConfiguration;
 import com.voicebase.v3client.datamodel.VbMetricGroupConfiguration;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.apache.commons.codec.Charsets;
+import org.apache.commons.io.IOUtils;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-/**
- * 
- * @author Volker Kueffel <volker@voicebase.com>
- *
- */
+/** @author Volker Kueffel <volker@voicebase.com> */
 public class MediaProcessingRequestBuilderTest {
 
   private static ObjectMapper OM;
@@ -69,15 +63,18 @@ public class MediaProcessingRequestBuilderTest {
   }
 
   private static MediaProcessingRequestBuilder requestBuilderStub() {
-    MediaProcessingRequestBuilder builder = new MediaProcessingRequestBuilder()
-        .withCallbackProvider(callbackProvider()).withConfigureSpeakers(true)
-        .withPredictionsEnabled(true).withKnowledgeDiscoveryEnabled(true)
-        .withAdvancedPunctuationEnabled(true).withAwsInputData(awsConfigStub())
-        .withLeftSpeakerName("left").withRightSpeakerName("right");
+    MediaProcessingRequestBuilder builder =
+        new MediaProcessingRequestBuilder()
+            .withCallbackProvider(callbackProvider())
+            .withConfigureSpeakers(true)
+            .withPredictionsEnabled(true)
+            .withKnowledgeDiscoveryEnabled(true)
+            .withAdvancedPunctuationEnabled(true)
+            .withAwsInputData(awsConfigStub())
+            .withLeftSpeakerName("left")
+            .withRightSpeakerName("right");
     return builder;
   }
-
-
 
   @Test
   public void testAdvancedFeatures() throws IOException {
@@ -85,8 +82,11 @@ public class MediaProcessingRequestBuilderTest {
 
     MediaProcessingRequest req = builder.build();
 
-    Assert.assertTrue(req.getConfiguration().getSpeechModel().getFeatures()
-        .contains(MediaProcessingRequestBuilder.SPEECH_FEATURE_ADVANCED_PUNCTUATION));
+    Assert.assertTrue(
+        req.getConfiguration()
+            .getSpeechModel()
+            .getFeatures()
+            .contains(MediaProcessingRequestBuilder.SPEECH_FEATURE_ADVANCED_PUNCTUATION));
     verifyJSONConfiguration("advanced-features.json", req.getConfiguration());
   }
 
@@ -94,8 +94,8 @@ public class MediaProcessingRequestBuilderTest {
       throws IOException {
 
     Assert.assertEquals(
-        IOUtils.resourceToString(resource, Charsets.UTF_8,
-            MediaProcessingRequestBuilderTest.class.getClassLoader()),
+        IOUtils.resourceToString(
+            resource, Charsets.UTF_8, MediaProcessingRequestBuilderTest.class.getClassLoader()),
         OM.writeValueAsString(vbConfiguration));
   }
 
@@ -108,8 +108,11 @@ public class MediaProcessingRequestBuilderTest {
 
     MediaProcessingRequest req = builder.build();
 
-    Assert.assertTrue(req.getConfiguration().getSpeechModel().getFeatures()
-        .contains(MediaProcessingRequestBuilder.SPEECH_FEATURE_VOICE));
+    Assert.assertTrue(
+        req.getConfiguration()
+            .getSpeechModel()
+            .getFeatures()
+            .contains(MediaProcessingRequestBuilder.SPEECH_FEATURE_VOICE));
     verifyJSONConfiguration("voice-features.json", req.getConfiguration());
   }
 
@@ -137,7 +140,6 @@ public class MediaProcessingRequestBuilderTest {
     verifyJSONConfiguration("metrics.json", req.getConfiguration());
   }
 
-
   @Test
   public void testDetectorConfig() throws IOException {
     // test if detectors are configured
@@ -148,9 +150,8 @@ public class MediaProcessingRequestBuilderTest {
     vbAttr.put("voicebase_numberRedaction", "1");
 
     MediaProcessingRequest req = builder.build();
-    
-    verifyJSONConfiguration("detectors.json", req.getConfiguration());
 
+    verifyJSONConfiguration("detectors.json", req.getConfiguration());
 
     // test if no detectors are configured
     builder = requestBuilderStub();
@@ -159,10 +160,7 @@ public class MediaProcessingRequestBuilderTest {
     vbAttr.put("voicebase_pciRedaction", "0");
     vbAttr.put("voicebase_numberRedaction", "0");
 
-    
     req = builder.build();
     Assert.assertNull(req.getConfiguration().getPrediction().getDetectors());
-
   }
-
 }

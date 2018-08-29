@@ -14,7 +14,6 @@ package com.voicebase.sdk.v3;
 import com.voicebase.v3client.datamodel.VbConfiguration;
 import com.voicebase.v3client.datamodel.VbMedia;
 import com.voicebase.v3client.datamodel.VbMetadata;
-
 import retrofit.http.Header;
 import retrofit.http.Multipart;
 import retrofit.http.POST;
@@ -22,34 +21,40 @@ import retrofit.http.Part;
 import retrofit.http.Path;
 import retrofit.mime.TypedFile;
 
-/**
- * 
- * @author Volker Kueffel <volker@voicebase.com>
- *
- */
+/** @author Volker Kueffel <volker@voicebase.com> */
 public interface MediaService {
 
   @Multipart
   @POST("/media")
-  public VbMedia processMedia(@Header("Authorization") String authorization,
-      @Part("configuration") VbConfiguration configuration, @Part("metadata") VbMetadata metadata,
+  public VbMedia processMedia(
+      @Header("Authorization") String authorization,
+      @Part("configuration") VbConfiguration configuration,
+      @Part("metadata") VbMetadata metadata,
       @Part("media") TypedFile media);
 
   @Multipart
   @POST("/media")
-  public VbMedia processMedia(@Header("Authorization") String authorization,
-      @Part("configuration") VbConfiguration configuration, @Part("metadata") VbMetadata metadata,
+  public VbMedia processMedia(
+      @Header("Authorization") String authorization,
+      @Part("configuration") VbConfiguration configuration,
+      @Part("metadata") VbMetadata metadata,
       @Part("mediaUrl") String mediaUrl);
 
   @Multipart
   @POST("/media/{mediaId}")
-  public VbMedia updateMedia(@Header("Authorization") String authorization, @Path("mediaId") String mediaId,
-      @Part("configuration") VbConfiguration configuration, @Part("metadata") VbMetadata metadata,
+  public VbMedia updateMedia(
+      @Header("Authorization") String authorization,
+      @Path("mediaId") String mediaId,
+      @Part("configuration") VbConfiguration configuration,
+      @Part("metadata") VbMetadata metadata,
       @Part("media") TypedFile media);
 
   @Multipart
   @POST("/media/{mediaId}")
-  public VbMedia updateMedia(@Header("Authorization") String authorization, @Path("mediaId") String mediaId,
-      @Part("configuration") VbConfiguration configuration, @Part("metadata") VbMetadata metadata,
+  public VbMedia updateMedia(
+      @Header("Authorization") String authorization,
+      @Path("mediaId") String mediaId,
+      @Part("configuration") VbConfiguration configuration,
+      @Part("metadata") VbMetadata metadata,
       @Part("mediaUrl") String mediaUrl);
 }

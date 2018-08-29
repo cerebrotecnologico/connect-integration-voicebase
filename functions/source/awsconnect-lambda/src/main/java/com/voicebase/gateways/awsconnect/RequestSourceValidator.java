@@ -14,16 +14,14 @@ package com.voicebase.gateways.awsconnect;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Validator for incoming requests.
- * 
- * @author Volker Kueffel <volker@voicebase.com>
  *
+ * @author Volker Kueffel <volker@voicebase.com>
  */
 public class RequestSourceValidator {
 
@@ -59,5 +57,4 @@ public class RequestSourceValidator {
 
     return true;
   }
-
 }

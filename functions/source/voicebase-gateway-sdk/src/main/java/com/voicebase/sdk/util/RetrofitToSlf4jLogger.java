@@ -13,34 +13,28 @@ package com.voicebase.sdk.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import retrofit.RestAdapter.Log;
 
-/**
- * 
- * @author Volker Kueffel <volker@voicebase.com>
- *
- */
+/** @author Volker Kueffel <volker@voicebase.com> */
 public class RetrofitToSlf4jLogger implements Log {
 
-	private final Logger logger;
+  private final Logger logger;
 
-	public RetrofitToSlf4jLogger(Class<?> slf4jLogCategory) {
-		this(slf4jLogCategory.getName());
-	}
+  public RetrofitToSlf4jLogger(Class<?> slf4jLogCategory) {
+    this(slf4jLogCategory.getName());
+  }
 
-	public RetrofitToSlf4jLogger(String slf4jLogCategory) {
-		logger = LoggerFactory.getLogger(slf4jLogCategory);
-	}
+  public RetrofitToSlf4jLogger(String slf4jLogCategory) {
+    logger = LoggerFactory.getLogger(slf4jLogCategory);
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see retrofit.RestAdapter.Log#log(java.lang.String)
-	 */
-	@Override
-	public void log(String message) {
-		logger.debug(message);
-	}
-
+  /*
+   * (non-Javadoc)
+   *
+   * @see retrofit.RestAdapter.Log#log(java.lang.String)
+   */
+  @Override
+  public void log(String message) {
+    logger.debug(message);
+  }
 }

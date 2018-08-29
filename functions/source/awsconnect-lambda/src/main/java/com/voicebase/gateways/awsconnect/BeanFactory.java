@@ -11,23 +11,16 @@
  */
 package com.voicebase.gateways.awsconnect;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.voicebase.gateways.awsconnect.lambda.Lambda;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.voicebase.gateways.awsconnect.lambda.Lambda;
-import com.voicebase.v3client.JacksonFactory;
-
-/**
- * 
- * @author Volker Kueffel <volker@voicebase.com>
- *
- */
+/** @author Volker Kueffel <volker@voicebase.com> */
 public class BeanFactory {
-
 
   public static final SimpleDateFormat dateFormatter() {
     SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
@@ -37,11 +30,11 @@ public class BeanFactory {
 
   /**
    * General purpose object mapper.
-   * <p/>
-   * If parsing the VoiceBase API object model use the object mapper shipped with the object model. 
-   * 
+   *
+   * <p>If parsing the VoiceBase API object model use the object mapper shipped with the object
+   * model.
+   *
    * @return
-   * 
    * @see {@link JacksonFactory#objectMapper()}
    */
   public static final ObjectMapper objectMapper() {
@@ -50,14 +43,14 @@ public class BeanFactory {
     objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     return objectMapper;
   }
-  
 
-  
   public static final RequestSourceValidator requestSourceValidator(Map<String, String> env) {
-    boolean validate = ConfigUtil.getBooleanSetting(env, Lambda.ENV_CALLBACK_SOURCE_IPS_VALIDATE,
-        Lambda.DEFAULT_SOURCE_IPS_VALIDATE);
-    List<String> callbackIps = ConfigUtil.getStringListSetting(env, Lambda.ENV_CALLBACK_SOURCE_IPS,
-        Lambda.DEFAULT_SOURCE_IPS);
+    boolean validate =
+        ConfigUtil.getBooleanSetting(
+            env, Lambda.ENV_CALLBACK_SOURCE_IPS_VALIDATE, Lambda.DEFAULT_SOURCE_IPS_VALIDATE);
+    List<String> callbackIps =
+        ConfigUtil.getStringListSetting(
+            env, Lambda.ENV_CALLBACK_SOURCE_IPS, Lambda.DEFAULT_SOURCE_IPS);
     return new RequestSourceValidator(callbackIps, validate);
   }
 }

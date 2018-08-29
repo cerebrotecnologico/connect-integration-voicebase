@@ -11,39 +11,41 @@
  */
 package com.voicebase.gateways.awsconnect.lambda;
 
-import java.util.Map;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Map;
 
-/**
- * 
- * @author Volker Kueffel <volker@voicebase.com>
- *
- */
+/** @author Volker Kueffel <volker@voicebase.com> */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(Include.ALWAYS)
 public class CustomResourceRequest {
 
   @JsonProperty("RequestType")
   private String requestType;
+
   @JsonProperty("ResponseURL")
   private String responseURL;
+
   @JsonProperty("StackId")
   private String stackId;
+
   @JsonProperty("RequestId")
   private String requestId;
+
   @JsonProperty("ResourceType")
   private String resourceType;
+
   @JsonProperty("LogicalResourceId")
   private String logicalSourceId;
+
   @JsonProperty("ResourceProperties")
   private Map<String, Object> resourceProperties;
+
   @JsonProperty("OldResourceProperties")
-  private Map<String,Object> oldResourceProperties;
-  
+  private Map<String, Object> oldResourceProperties;
+
   public String getRequestType() {
     return requestType;
   }
@@ -126,53 +128,34 @@ public class CustomResourceRequest {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (getClass() != obj.getClass())
-      return false;
+    if (this == obj) return true;
+    if (obj == null) return false;
+    if (getClass() != obj.getClass()) return false;
     CustomResourceRequest other = (CustomResourceRequest) obj;
     if (logicalSourceId == null) {
-      if (other.logicalSourceId != null)
-        return false;
-    } else if (!logicalSourceId.equals(other.logicalSourceId))
-      return false;
+      if (other.logicalSourceId != null) return false;
+    } else if (!logicalSourceId.equals(other.logicalSourceId)) return false;
     if (oldResourceProperties == null) {
-      if (other.oldResourceProperties != null)
-        return false;
-    } else if (!oldResourceProperties.equals(other.oldResourceProperties))
-      return false;
+      if (other.oldResourceProperties != null) return false;
+    } else if (!oldResourceProperties.equals(other.oldResourceProperties)) return false;
     if (requestId == null) {
-      if (other.requestId != null)
-        return false;
-    } else if (!requestId.equals(other.requestId))
-      return false;
+      if (other.requestId != null) return false;
+    } else if (!requestId.equals(other.requestId)) return false;
     if (requestType == null) {
-      if (other.requestType != null)
-        return false;
-    } else if (!requestType.equals(other.requestType))
-      return false;
+      if (other.requestType != null) return false;
+    } else if (!requestType.equals(other.requestType)) return false;
     if (resourceProperties == null) {
-      if (other.resourceProperties != null)
-        return false;
-    } else if (!resourceProperties.equals(other.resourceProperties))
-      return false;
+      if (other.resourceProperties != null) return false;
+    } else if (!resourceProperties.equals(other.resourceProperties)) return false;
     if (resourceType == null) {
-      if (other.resourceType != null)
-        return false;
-    } else if (!resourceType.equals(other.resourceType))
-      return false;
+      if (other.resourceType != null) return false;
+    } else if (!resourceType.equals(other.resourceType)) return false;
     if (responseURL == null) {
-      if (other.responseURL != null)
-        return false;
-    } else if (!responseURL.equals(other.responseURL))
-      return false;
+      if (other.responseURL != null) return false;
+    } else if (!responseURL.equals(other.responseURL)) return false;
     if (stackId == null) {
-      if (other.stackId != null)
-        return false;
-    } else if (!stackId.equals(other.stackId))
-      return false;
+      if (other.stackId != null) return false;
+    } else if (!stackId.equals(other.stackId)) return false;
     return true;
   }
 
@@ -198,7 +181,4 @@ public class CustomResourceRequest {
     builder.append("]");
     return builder.toString();
   }
-
-
 }
-
