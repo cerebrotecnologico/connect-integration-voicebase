@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved. Licensed under the
+ * Copyright 2016-${year} Amazon.com, Inc. or its affiliates. All Rights Reserved. Licensed under the
  * Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with
  * the License. A copy of the License is located at
  *
@@ -11,29 +11,27 @@
  */
 package com.voicebase.gateways.awsconnect;
 
+import com.google.common.base.Splitter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
 
-import com.google.common.base.Splitter;
-
 /**
  * Configuration utility for Log4j2.
- * 
- * @author Volker Kueffel <volker@voicebase.com>
  *
+ * @author Volker Kueffel <volker@voicebase.com>
  */
 public class LogConfigurer {
 
   private static final Splitter CONFIG_SPLITTER = Splitter.on(";").omitEmptyStrings().trimResults();
-  private static final Splitter LEVEL_SPLITTER = Splitter.on("=").omitEmptyStrings().trimResults().limit(2);
+  private static final Splitter LEVEL_SPLITTER =
+      Splitter.on("=").omitEmptyStrings().trimResults().limit(2);
   private static final Splitter LOGGER_SPLITTER = Splitter.on(",").omitEmptyStrings().trimResults();
 
   public static void configure(String configString) {
@@ -86,5 +84,4 @@ public class LogConfigurer {
     }
     return loggerConfig;
   }
-
 }

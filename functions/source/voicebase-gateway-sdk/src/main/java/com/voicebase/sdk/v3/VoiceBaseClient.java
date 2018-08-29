@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved. Licensed under the
+ * Copyright 2016-${year} Amazon.com, Inc. or its affiliates. All Rights Reserved. Licensed under the
  * Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with
  * the License. A copy of the License is located at
  *
@@ -11,26 +11,18 @@
  */
 package com.voicebase.sdk.v3;
 
-import java.io.IOException;
-import java.util.Map;
-
-import javax.activation.MimetypesFileTypeMap;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.voicebase.v3client.JacksonFactory;
 import com.voicebase.v3client.datamodel.VbMedia;
-
+import java.io.IOException;
+import java.util.Map;
+import javax.activation.MimetypesFileTypeMap;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import retrofit.mime.TypedFile;
 
-/**
- * 
- * @author Volker Kueffel <volker@voicebase.com>
- *
- */
+/** @author Volker Kueffel <volker@voicebase.com> */
 public class VoiceBaseClient {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(VoiceBaseClient.class);
@@ -71,11 +63,16 @@ public class VoiceBaseClient {
       TypedFile file =
           new TypedFile(mimeMap.getContentType(request.getMediaFile()), request.getMediaFile());
 
-      result = mediaService.processMedia(authHeaderValue(token), request.getConfiguration(),
-          request.getMetadata(), file);
+      result =
+          mediaService.processMedia(
+              authHeaderValue(token), request.getConfiguration(), request.getMetadata(), file);
     } else if (request.getMediaUrl() != null) {
-      result = mediaService.processMedia(authHeaderValue(token), request.getConfiguration(),
-          request.getMetadata(), request.getMediaUrl());
+      result =
+          mediaService.processMedia(
+              authHeaderValue(token),
+              request.getConfiguration(),
+              request.getMetadata(),
+              request.getMediaUrl());
     } else {
       throw new IllegalArgumentException("Media information missing.");
     }
@@ -90,8 +87,9 @@ public class VoiceBaseClient {
     return mediaId;
   }
 
-  public String uploadMedia(String token, MediaProcessingRequest request, int retryAttempts,
-      long retryDelay) throws IOException {
+  public String uploadMedia(
+      String token, MediaProcessingRequest request, int retryAttempts, long retryDelay)
+      throws IOException {
 
     int attempt = 0;
     boolean success = false;
@@ -133,11 +131,21 @@ public class VoiceBaseClient {
       TypedFile file =
           new TypedFile(mimeMap.getContentType(request.getMediaFile()), request.getMediaFile());
 
-      result = mediaService.updateMedia(authHeaderValue(token), mediaId, request.getConfiguration(),
-          request.getMetadata(), file);
+      result =
+          mediaService.updateMedia(
+              authHeaderValue(token),
+              mediaId,
+              request.getConfiguration(),
+              request.getMetadata(),
+              file);
     } else {
-      result = mediaService.updateMedia(authHeaderValue(token), mediaId, request.getConfiguration(),
-          request.getMetadata(), request.getMediaUrl());
+      result =
+          mediaService.updateMedia(
+              authHeaderValue(token),
+              mediaId,
+              request.getConfiguration(),
+              request.getMetadata(),
+              request.getMediaUrl());
     }
 
     LOGGER.trace("Voicebase response: {}", result);
@@ -149,8 +157,13 @@ public class VoiceBaseClient {
     return false;
   }
 
-  public String updateMedia(String token, String mediaId, MediaProcessingRequest request,
-      int retryAttempts, long retryDelay) throws IOException {
+  public String updateMedia(
+      String token,
+      String mediaId,
+      MediaProcessingRequest request,
+      int retryAttempts,
+      long retryDelay)
+      throws IOException {
 
     int attempt = 0;
     boolean success = false;
@@ -191,5 +204,4 @@ public class VoiceBaseClient {
   private String authHeaderValue(String token) {
     return "Bearer " + token;
   }
-
 }

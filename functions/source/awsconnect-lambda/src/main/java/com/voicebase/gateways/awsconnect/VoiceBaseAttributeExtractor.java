@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved. Licensed under the
+ * Copyright 2016-${year} Amazon.com, Inc. or its affiliates. All Rights Reserved. Licensed under the
  * Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with
  * the License. A copy of the License is located at
  *
@@ -11,42 +11,39 @@
  */
 package com.voicebase.gateways.awsconnect;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.voicebase.gateways.awsconnect.lambda.Lambda;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.apache.commons.configuration2.MapConfiguration;
 import org.apache.commons.configuration2.SubsetConfiguration;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import com.voicebase.gateways.awsconnect.lambda.Lambda;
-
 /**
  * Utility class to extract VoiceBase settings from Amazon Connect attributes.
- * 
- * @author Volker Kueffel <volker@voicebase.com>
  *
+ * @author Volker Kueffel <volker@voicebase.com>
  */
 public final class VoiceBaseAttributeExtractor extends MapConfiguration {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(VoiceBaseAttributeExtractor.class);
-  
-  
+
   @SuppressWarnings("unchecked")
-  public static VoiceBaseAttributeExtractor fromAwsInputData(Map<String, Object>awsInputData) {
-    if (awsInputData==null) {
+  public static VoiceBaseAttributeExtractor fromAwsInputData(Map<String, Object> awsInputData) {
+    if (awsInputData == null) {
       return null;
     }
-    Object vbAttr=awsInputData.get(Lambda.KEY_ATTRIBUTES);
-    if (vbAttr==null || !(vbAttr instanceof Map)) {
+    Object vbAttr = awsInputData.get(Lambda.KEY_ATTRIBUTES);
+    if (vbAttr == null || !(vbAttr instanceof Map)) {
       return null;
     }
     return new VoiceBaseAttributeExtractor((Map<String, ?>) vbAttr);
@@ -54,15 +51,13 @@ public final class VoiceBaseAttributeExtractor extends MapConfiguration {
 
   /**
    * Extract string list from configuration.
-   * <p/>
-   * Will either return a list of strings or null, never an empty list. Empty list entries are
+   *
+   * <p>Will either return a list of strings or null, never an empty list. Empty list entries are
    * skipped. All entries are trimmed.
-   * 
+   *
    * @param attr configuration
    * @param key configuration key
-   * 
    * @return list of strings extracted from parameter or null.
-   * 
    * @see KinesisRecordProcessor#Lambda.VB_CONFIG_LIST_SEPARATOR
    */
   public static List<String> getStringParameterList(ImmutableConfiguration attr, String key) {
@@ -94,14 +89,12 @@ public final class VoiceBaseAttributeExtractor extends MapConfiguration {
 
   /**
    * Get string parameter from configuration.
-   * <p/>
-   * Result string is trimmed.
-   * 
+   *
+   * <p>Result string is trimmed.
+   *
    * @param attr configuration
    * @param key configuration key
-   * 
    * @return parameter value or null if no such key or value is empty or the pre-defined null-string
-   * 
    * @see KinesisRecordProcessor#Lambda.VB_CONFIG_NULL_STRING
    */
   public static String getStringParameter(ImmutableConfiguration attr, String key) {
@@ -119,8 +112,12 @@ public final class VoiceBaseAttributeExtractor extends MapConfiguration {
     String boolStr = getStringParameter(attr, key);
     if (boolStr != null) {
       try {
-        Boolean result = BooleanUtils.toBooleanObject(boolStr, Lambda.VB_CONFIG_BOOLEAN_TRUE_STRING,
-            Lambda.VB_CONFIG_BOOLEAN_FALSE_STRING, Lambda.VB_CONFIG_NULL_STRING);
+        Boolean result =
+            BooleanUtils.toBooleanObject(
+                boolStr,
+                Lambda.VB_CONFIG_BOOLEAN_TRUE_STRING,
+                Lambda.VB_CONFIG_BOOLEAN_FALSE_STRING,
+                Lambda.VB_CONFIG_NULL_STRING);
         return result;
       } catch (Exception e) {
         LOGGER.warn("Invalid value for {}: {}", key, boolStr);
@@ -129,13 +126,34 @@ public final class VoiceBaseAttributeExtractor extends MapConfiguration {
     return null;
   }
 
-  public static boolean getBooleanParameter(ImmutableConfiguration attr, String key,
-      boolean defaultValue) {
+  public static boolean getBooleanParameter(
+      ImmutableConfiguration attr, String key, boolean defaultValue) {
     Boolean bool = getBooleanParameter(attr, key);
     if (bool == null) {
       return defaultValue;
     }
     return bool.booleanValue();
+  }
+
+  public static Integer getIntegerParameter(ImmutableConfiguration attr, String key) {
+    String intStr = getStringParameter(attr, key);
+    if (intStr != null) {
+      try {
+        Integer result = NumberUtils.createInteger(intStr);
+        return result;
+      } catch (Exception e) {
+        LOGGER.warn("Invalid value for {}: {}", key, intStr);
+      }
+    }
+    return null;
+  }
+
+  public static int getIntegerParameter(ImmutableConfiguration attr, String key, int defaultValue) {
+    Integer intParam = getIntegerParameter(attr, key);
+    if (intParam == null) {
+      return defaultValue;
+    }
+    return intParam;
   }
 
   public static String getVoicebaseAttributeName(String... levels) {

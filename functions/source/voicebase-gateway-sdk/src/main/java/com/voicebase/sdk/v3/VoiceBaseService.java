@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved. Licensed under the
+ * Copyright 2016-${year} Amazon.com, Inc. or its affiliates. All Rights Reserved. Licensed under the
  * Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with
  * the License. A copy of the License is located at
  *
@@ -12,15 +12,10 @@
 package com.voicebase.sdk.v3;
 
 import java.util.Map;
-
 import retrofit.http.GET;
 import retrofit.http.Header;
 
-/**
- * 
- * @author Volker Kueffel <volker@voicebase.com>
- *
- */
+/** @author Volker Kueffel <volker@voicebase.com> */
 public interface VoiceBaseService {
   @GET("/")
   public Map<String, ?> getResources(@Header("Authorization") String authorization);

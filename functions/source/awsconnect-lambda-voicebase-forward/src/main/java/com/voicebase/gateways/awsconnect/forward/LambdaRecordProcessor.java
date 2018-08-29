@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved. Licensed under the
+ * Copyright 2016-${year} Amazon.com, Inc. or its affiliates. All Rights Reserved. Licensed under the
  * Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with
  * the License. A copy of the License is located at
  *
@@ -11,13 +11,6 @@
  */
 package com.voicebase.gateways.awsconnect.forward;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
@@ -26,13 +19,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.voicebase.gateways.awsconnect.BeanFactory;
 import com.voicebase.gateways.awsconnect.lambda.Lambda;
 import com.voicebase.gateways.awsconnect.lambda.LambdaHandler;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Lambda function to retrieve Amazon Connect output from a Kinesis stream and send a request to the
  * VoiceBase API for processing.
- * 
- * @author Volker Kueffel <volker@voicebase.com>
  *
+ * @author Volker Kueffel <volker@voicebase.com>
  */
 public class LambdaRecordProcessor extends LambdaHandler
     implements RequestHandler<KinesisEvent, Void> {
@@ -50,7 +47,6 @@ public class LambdaRecordProcessor extends LambdaHandler
     super(env);
   }
 
-
   @Override
   protected void configure(Map<String, String> env) {
     objectMapper = BeanFactory.objectMapper();
@@ -67,12 +63,11 @@ public class LambdaRecordProcessor extends LambdaHandler
     for (KinesisEventRecord recordEvent : event.getRecords()) {
       if (recordEvent != null) {
         try {
-          Map<String, Object> dataAsMap = readKinesisRecord(recordEvent);
-          forwarder.forwardRequest(dataAsMap);
+          Map<String, Object> ctrAsMap = readKinesisRecord(recordEvent);
+          forwarder.forwardRequest(ctrAsMap);
         } catch (Exception e) {
           LOGGER.error("Error sending media to VB API", e);
         }
-
       }
     }
     return null;
@@ -80,11 +75,9 @@ public class LambdaRecordProcessor extends LambdaHandler
 
   /**
    * Get Kinesis record and deserialize to map.
-   * 
+   *
    * @param recordEvent
-   * 
    * @return Record deserialized into a map.
-   * 
    * @throws IOException
    */
   Map<String, Object> readKinesisRecord(KinesisEventRecord recordEvent) throws IOException {
@@ -102,5 +95,4 @@ public class LambdaRecordProcessor extends LambdaHandler
     }
     return dataAsMap;
   }
-
 }

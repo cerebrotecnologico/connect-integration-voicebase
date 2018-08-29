@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved. Licensed under the
+ * Copyright 2016-${year} Amazon.com, Inc. or its affiliates. All Rights Reserved. Licensed under the
  * Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with
  * the License. A copy of the License is located at
  *
@@ -12,19 +12,15 @@
 package com.voicebase.sdk.util;
 
 import java.io.IOException;
-
 import retrofit.ErrorHandler;
 import retrofit.RetrofitError;
 
-/**
- * @author Volker Kueffel <volker@voicebase.com>
- *
- */
+/** @author Volker Kueffel <volker@voicebase.com> */
 public class ApiErrorHandler implements ErrorHandler {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see retrofit.ErrorHandler#handleError(retrofit.RetrofitError)
    */
   @Override
@@ -55,8 +51,10 @@ public class ApiErrorHandler implements ErrorHandler {
         break;
     }
 
-    return new ApiException(message).withStatusCode(error.getResponse().getStatus());
-
+    ApiException apiError = new ApiException(message);
+    if (error.getResponse() != null) {
+      apiError.withStatusCode(error.getResponse().getStatus());
+    }
+    return apiError;
   }
-
 }

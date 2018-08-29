@@ -5,7 +5,7 @@
   <parent>
     <groupId>com.voicebase.awsconnect</groupId>
     <artifactId>awsconnect-parent</artifactId>
-    <version>0.9</version>
+    <version>0.9.1-SNAPSHOT</version>
   </parent>
   <artifactId>voicebase-datamodel</artifactId>
   <packaging>jar</packaging>

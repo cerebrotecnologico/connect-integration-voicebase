@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved. Licensed under the
+ * Copyright 2016-${year} Amazon.com, Inc. or its affiliates. All Rights Reserved. Licensed under the
  * Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with
  * the License. A copy of the License is located at
  *
@@ -13,21 +13,15 @@ package com.voicebase.sdk.util;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
-
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * 
- * @author Volker Kueffel <volker@voicebase.com>
- *
- */
+/** @author Volker Kueffel <volker@voicebase.com> */
 public class RequestSigner {
   private static final Logger LOGGER = LoggerFactory.getLogger(RequestSigner.class);
   private static final String HMAC_ALGORITHM = "HmacSHA256";
@@ -56,7 +50,6 @@ public class RequestSigner {
       LOGGER.warn("{}; cannot verify request parameters.", e.getMessage());
     }
     algorithmAvailable = works;
-
   }
 
   public long getSignatureLifetimeSeconds() {
@@ -78,9 +71,7 @@ public class RequestSigner {
   }
 
   /**
-   * 
-   * @param timestamp
-   *          Seconds since 1970-01-01
+   * @param timestamp Seconds since 1970-01-01
    * @param token
    * @param signature
    * @return
@@ -90,7 +81,9 @@ public class RequestSigner {
     if (signatureLifetimeSeconds > 0 && signatureValidUntil <= System.currentTimeMillis()) {
       LOGGER.debug(
           "Request timestamp too old, only accept if timestamp is at most {}s in the past. Timestamp: {}, min acceptable {}",
-          signatureLifetimeSeconds, timestamp, signatureValidUntil);
+          signatureLifetimeSeconds,
+          timestamp,
+          signatureValidUntil);
       return false;
     }
 
@@ -124,7 +117,10 @@ public class RequestSigner {
     long timestamp = new Date().getTime();
     String token = RandomStringUtils.randomAlphanumeric(50);
     String signature = calculateSignature(timestamp, token);
-    return new SignatureParameters().withTimestamp(timestamp).withToken(token).withSignature(signature);
+    return new SignatureParameters()
+        .withTimestamp(timestamp)
+        .withToken(token)
+        .withSignature(signature);
   }
 
   public static final class SignatureParameters {
@@ -171,5 +167,4 @@ public class RequestSigner {
       return this;
     }
   }
-
 }

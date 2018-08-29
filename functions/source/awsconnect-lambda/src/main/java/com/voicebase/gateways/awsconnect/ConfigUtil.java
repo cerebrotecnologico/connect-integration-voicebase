@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved. Licensed under the
+ * Copyright 2016-${year} Amazon.com, Inc. or its affiliates. All Rights Reserved. Licensed under the
  * Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with
  * the License. A copy of the License is located at
  *
@@ -11,25 +11,23 @@
  */
 package com.voicebase.gateways.awsconnect;
 
+import com.google.common.base.Splitter;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import com.google.common.base.Splitter;
-
 /**
  * Tool to extract typed values from the environment.
- * 
- * @author Volker Kueffel <volker@voicebase.com>
  *
+ * @author Volker Kueffel <volker@voicebase.com>
  */
 public class ConfigUtil {
 
   protected static final Splitter CSV_SPLITTER = Splitter.on(",").omitEmptyStrings().trimResults();
 
-  public static boolean getBooleanSetting(Map<String, String> env, String key, boolean defaultValue) {
+  public static boolean getBooleanSetting(
+      Map<String, String> env, String key, boolean defaultValue) {
     if (env == null) {
       return defaultValue;
     }
@@ -40,7 +38,6 @@ public class ConfigUtil {
     }
 
     return BooleanUtils.toBoolean(value);
-
   }
 
   public static String getStringSetting(Map<String, String> env, String key, String defaultValue) {
@@ -56,7 +53,8 @@ public class ConfigUtil {
     return value;
   }
 
-  public static List<String> getStringListSetting(Map<String, String> env, String key, List<String> defaultValue) {
+  public static List<String> getStringListSetting(
+      Map<String, String> env, String key, List<String> defaultValue) {
     String entry = getStringSetting(env, key, null);
     if (entry == null) {
       return defaultValue;
@@ -77,10 +75,9 @@ public class ConfigUtil {
 
     try {
       return Long.parseLong(value);
-    } catch (Exception e) {
+    } catch (NumberFormatException e) {
       return defaultValue;
     }
-
   }
 
   public static int getIntSetting(Map<String, String> env, String key, int defaultValue) {
@@ -95,9 +92,25 @@ public class ConfigUtil {
 
     try {
       return Integer.parseInt(value);
-    } catch (Exception e) {
+    } catch (NumberFormatException e) {
       return defaultValue;
     }
   }
 
+  public static double getDoubleSetting(Map<String, String> env, String key, double defaultValue) {
+    if (env == null) {
+      return defaultValue;
+    }
+    String value = StringUtils.trimToNull(env.get(key));
+
+    if (value == null) {
+      return defaultValue;
+    }
+
+    try {
+      return Double.parseDouble(value);
+    } catch (NumberFormatException e) {
+      return defaultValue;
+    }
+  }
 }

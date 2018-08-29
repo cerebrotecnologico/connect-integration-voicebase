@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved. Licensed under the
+ * Copyright 2016-${year} Amazon.com, Inc. or its affiliates. All Rights Reserved. Licensed under the
  * Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with
  * the License. A copy of the License is located at
  *
@@ -16,18 +16,10 @@ import static com.voicebase.gateways.awsconnect.VoiceBaseAttributeExtractor.getS
 import static com.voicebase.gateways.awsconnect.VoiceBaseAttributeExtractor.getStringParameterSet;
 import static com.voicebase.gateways.awsconnect.VoiceBaseAttributeExtractor.getVoicebaseAttributeName;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.commons.configuration2.ImmutableConfiguration;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.collect.Lists;
+import com.voicebase.gateways.awsconnect.VoiceBaseAttributeExtractor;
+import com.voicebase.gateways.awsconnect.lambda.Lambda;
+import com.voicebase.sdk.v3.MediaProcessingRequest;
 import com.voicebase.v3client.datamodel.VbAudioRedactorConfiguration;
 import com.voicebase.v3client.datamodel.VbCallbackConfiguration;
 import com.voicebase.v3client.datamodel.VbChannelConfiguration;
@@ -54,16 +46,18 @@ import com.voicebase.v3client.datamodel.VbTranscriptConfiguration;
 import com.voicebase.v3client.datamodel.VbTranscriptRedactorConfiguration;
 import com.voicebase.v3client.datamodel.VbVocabularyConfiguration;
 import com.voicebase.v3client.datamodel.VbVocabularyTermConfiguration;
-import com.voicebase.gateways.awsconnect.VoiceBaseAttributeExtractor;
-import com.voicebase.gateways.awsconnect.lambda.Lambda;
-import com.voicebase.sdk.v3.MediaProcessingRequest;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.apache.commons.configuration2.ImmutableConfiguration;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * 
- * @author Volker Kueffel <volker@voicebase.com>
- *
- */
 public class MediaProcessingRequestBuilder {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MediaProcessingRequestBuilder.class);
@@ -100,8 +94,6 @@ public class MediaProcessingRequestBuilder {
   private VbMetadata metaData;
   private MediaProcessingRequest request;
 
-
-
   public void setAwsInputData(Map<String, Object> dataAsMap) {
     this.awsInputData = dataAsMap;
   }
@@ -110,7 +102,7 @@ public class MediaProcessingRequestBuilder {
     setAwsInputData(dataAsMap);
     return this;
   }
-  
+
   Map<String, Object> getAwsInputData() {
     return this.awsInputData;
   }
@@ -224,10 +216,9 @@ public class MediaProcessingRequestBuilder {
 
   /**
    * Create VB configuration out of Lily message.
-   * <p/>
-   * NOTE: As a side effect some of the attributes in the map are rewritten with expanded lists.
-   * 
-   * 
+   *
+   * <p>NOTE: As a side effect some of the attributes in the map are rewritten with expanded lists.
+   *
    * @return VB configuration
    */
   private VbConfiguration createConfiguration() {
@@ -257,7 +248,6 @@ public class MediaProcessingRequestBuilder {
     }
     vbSpeechModelConfiguration.features(speechFeatures);
 
-
     // callbacks
     List<VbIncludeTypeEnum> includes = new ArrayList<>();
     if (callbackProvider.hasIncludes()) {
@@ -272,13 +262,18 @@ public class MediaProcessingRequestBuilder {
     }
 
     List<VbCallbackConfiguration> callbacks = new ArrayList<>();
-    callbacks.add((new VbCallbackConfiguration()).url(callbackProvider.getCallbackUrl())
-        .method(VbHttpMethodEnum.valueOf(callbackProvider.getCallbackMethod())).include(includes));
-    if (callbackProvider.hasAdditionalCallbackUrls()) {
-      for (String callback : callbackProvider.getAdditionalCallbackUrls()) {
-        callbacks.add(new VbCallbackConfiguration().url(callback)
+    callbacks.add(
+        (new VbCallbackConfiguration())
+            .url(callbackProvider.getCallbackUrl())
             .method(VbHttpMethodEnum.valueOf(callbackProvider.getCallbackMethod()))
             .include(includes));
+    if (callbackProvider.hasAdditionalCallbackUrls()) {
+      for (String callback : callbackProvider.getAdditionalCallbackUrls()) {
+        callbacks.add(
+            new VbCallbackConfiguration()
+                .url(callback)
+                .method(VbHttpMethodEnum.valueOf(callbackProvider.getCallbackMethod()))
+                .include(includes));
       }
     }
     vbPublishConfiguration.callbacks(callbacks);
@@ -296,31 +291,57 @@ public class MediaProcessingRequestBuilder {
       ImmutableConfiguration vbAttrs = mc.immutableSubset(Lambda.VB_ATTR);
 
       List<VbDetectorConfiguration> detectors = new ArrayList<>();
+      Set<String> detectorsAdded = new HashSet<>();
 
-      boolean redactPCI = getBooleanParameter(vbAttrs, Lambda.VB_ATTR_PCIREDACT,
-          Lambda.DEFAULT_ENABLE_PCI_REDACTION);
+      boolean redactPCI =
+          getBooleanParameter(
+              vbAttrs, Lambda.VB_ATTR_PCIREDACT, Lambda.DEFAULT_ENABLE_PCI_REDACTION);
       if (redactPCI) {
         VbDetectorConfiguration pciDetectorConfiguration =
-            new VbDetectorConfiguration().detectorName(DETECTOR_NAME_PCI)
-                .parameters(Collections.singletonList(
-                    new VbParameter().parameter(DETECTOR_PCI_PARAM_DETECTION_LEVEL_NAME)
-                        .value(DETECTOR_PCI_PARAM_DETECTION_LEVEL_VALUE)))
+            new VbDetectorConfiguration()
+                .detectorName(DETECTOR_NAME_PCI)
+                .parameters(
+                    Collections.singletonList(
+                        new VbParameter()
+                            .parameter(DETECTOR_PCI_PARAM_DETECTION_LEVEL_NAME)
+                            .value(DETECTOR_PCI_PARAM_DETECTION_LEVEL_VALUE)))
                 .redactor(DEFAULT_REDACTOR_CONFIG);
         detectors.add(pciDetectorConfiguration);
+        detectorsAdded.add(pciDetectorConfiguration.getDetectorName());
       }
 
-      boolean redactNumbers = getBooleanParameter(vbAttrs, Lambda.VB_ATTR_NUMBERREDACT,
-          Lambda.DEFAULT_ENABLE_NUMBER_REDACTION);
+      boolean redactNumbers =
+          getBooleanParameter(
+              vbAttrs, Lambda.VB_ATTR_NUMBERREDACT, Lambda.DEFAULT_ENABLE_NUMBER_REDACTION);
       if (redactNumbers) {
         VbDetectorConfiguration numberDetectorConfiguration =
-            new VbDetectorConfiguration().detectorName(DETECTOR_NAME_NUMBER).redactor(DEFAULT_REDACTOR_CONFIG);
+            new VbDetectorConfiguration()
+                .detectorName(DETECTOR_NAME_NUMBER)
+                .redactor(DEFAULT_REDACTOR_CONFIG);
         detectors.add(numberDetectorConfiguration);
+        detectorsAdded.add(numberDetectorConfiguration.getDetectorName());
+      }
+
+      String commaSeparatedDectectorNames =
+          VoiceBaseAttributeExtractor.getStringParameter(vbAttrs, Lambda.VB_ATTR_REDACTORS);
+      if (!StringUtils.isBlank(commaSeparatedDectectorNames)) {
+        String[] detectorNames = StringUtils.split(commaSeparatedDectectorNames, ',');
+        for (String detectorName : detectorNames) {
+          detectorName = detectorName.trim();
+          if (!detectorsAdded.contains(detectorName)) {
+            VbDetectorConfiguration detectorConfiguration =
+                new VbDetectorConfiguration()
+                    .detectorName(detectorName)
+                    .redactor(DEFAULT_REDACTOR_CONFIG);
+            detectors.add(detectorConfiguration);
+            detectorsAdded.add(detectorConfiguration.getDetectorName());
+          }
+        }
       }
 
       if (!detectors.isEmpty()) {
         vbPredictionConfiguration.detectors(detectors);
       }
-
 
       String priorityString = getStringParameter(vbAttrs, Lambda.VB_ATTR_PRIORIY);
       try {
@@ -330,19 +351,24 @@ public class MediaProcessingRequestBuilder {
         }
         vbConfiguration.priority(p);
       } catch (Exception e) {
-        LOGGER.error("Unknown priority '{}' for ext ID {}",
-            vbAttrs.getString(Lambda.VB_ATTR_PRIORIY), awsInputData.get(Lambda.KEY_EXTERNAL_ID));
+        LOGGER.error(
+            "Unknown priority '{}' for ext ID {}",
+            vbAttrs.getString(Lambda.VB_ATTR_PRIORIY),
+            awsInputData.get(Lambda.KEY_EXTERNAL_ID));
         vbConfiguration.priority(VbPriorityEnum.NORMAL);
       }
 
       ImmutableConfiguration transcriptAttr = vbAttrs.immutableSubset(Lambda.VB_ATTR_TRANSCRIPT);
 
-      vbTranscriptConfiguration.formatting(new VbFormattingConfiguration().enableNumberFormatting(
-          getBooleanParameter(transcriptAttr, Lambda.VB_ATTR_TRANSCRIPT_NUMBER_FORMAT)));
+      vbTranscriptConfiguration.formatting(
+          new VbFormattingConfiguration()
+              .enableNumberFormatting(
+                  getBooleanParameter(transcriptAttr, Lambda.VB_ATTR_TRANSCRIPT_NUMBER_FORMAT)));
 
-      vbTranscriptConfiguration
-          .contentFiltering(new VbContentFilteringConfiguration().enableProfanityFiltering(
-              getBooleanParameter(transcriptAttr, Lambda.VB_ATTR_TRANSCRIPT_SWEARWORD_FILTER)));
+      vbTranscriptConfiguration.contentFiltering(
+          new VbContentFilteringConfiguration()
+              .enableProfanityFiltering(
+                  getBooleanParameter(transcriptAttr, Lambda.VB_ATTR_TRANSCRIPT_SWEARWORD_FILTER)));
 
       // knowledge discovery
       ImmutableConfiguration knowledgeAttr = vbAttrs.immutableSubset(Lambda.VB_ATTR_KNOWLEDGE);
@@ -444,16 +470,17 @@ public class MediaProcessingRequestBuilder {
         }
         vbConfiguration.metrics(metricsConfs);
       }
-
     }
 
-    vbConfiguration.ingest(vbIngestConfiguration).publish(vbPublishConfiguration)
-        .transcript(vbTranscriptConfiguration).speechModel(vbSpeechModelConfiguration)
-        .prediction(vbPredictionConfiguration).knowledge(vbKnowledgeConfiguration)
+    vbConfiguration
+        .ingest(vbIngestConfiguration)
+        .publish(vbPublishConfiguration)
+        .transcript(vbTranscriptConfiguration)
+        .speechModel(vbSpeechModelConfiguration)
+        .prediction(vbPredictionConfiguration)
+        .knowledge(vbKnowledgeConfiguration)
         .labs(vbLabsConfiguration);
-
 
     return vbConfiguration;
   }
-
 }

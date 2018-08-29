@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved. Licensed under the
+ * Copyright 2016-${year} Amazon.com, Inc. or its affiliates. All Rights Reserved. Licensed under the
  * Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with
  * the License. A copy of the License is located at
  *
@@ -13,12 +13,6 @@ package com.voicebase.gateways.awsconnect.response;
 
 import static com.voicebase.gateways.awsconnect.ConfigUtil.getStringSetting;
 
-import java.nio.ByteBuffer;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.amazonaws.services.kinesis.AmazonKinesisClientBuilder;
 import com.amazonaws.services.kinesis.model.PutRecordRequest;
@@ -27,12 +21,12 @@ import com.voicebase.gateways.awsconnect.ConfigUtil;
 import com.voicebase.gateways.awsconnect.lambda.Lambda;
 import com.voicebase.v3client.JacksonFactory;
 import com.voicebase.v3client.datamodel.VbMedia;
+import java.nio.ByteBuffer;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * 
- * @author Volker Kueffel <volker@voicebase.com>
- *
- */
+/** @author Volker Kueffel <volker@voicebase.com> */
 public class TranscriptionForwarder {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TranscriptionForwarder.class);
@@ -75,9 +69,16 @@ public class TranscriptionForwarder {
       }
       try {
 
-        kinesisClient.putRecord(new PutRecordRequest().withStreamName(transcriptOutputStream)
-            .withData(ByteBuffer.wrap(msgData)).withPartitionKey(partitionKey));
-        LOGGER.debug("Transcript for call ID {}, media ID {} sent to {}", externalId, mediaId, transcriptOutputStream);
+        kinesisClient.putRecord(
+            new PutRecordRequest()
+                .withStreamName(transcriptOutputStream)
+                .withData(ByteBuffer.wrap(msgData))
+                .withPartitionKey(partitionKey));
+        LOGGER.debug(
+            "Transcript for call ID {}, media ID {} sent to {}",
+            externalId,
+            mediaId,
+            transcriptOutputStream);
         LOGGER.trace("VB API processing result: {}", processingResult);
       } catch (Exception e) {
         LOGGER.error("Unable to write result to Kinesis", e);
@@ -116,8 +117,10 @@ public class TranscriptionForwarder {
 
   void configure(Map<String, String> env) {
     transcriptOutputStream = getStringSetting(env, Lambda.ENV_TRANSCRIPT_OUTPUT_STREAM, null);
-    addNewlineToOutput = ConfigUtil.getBooleanSetting(env, Lambda.ENV_TRANSCRIPT_OUTPUT_ADD_NEWLINE,
-        Lambda.DEFAULT_TRANSCRIPT_OUTPUT_ADD_NEWLINE);
+    addNewlineToOutput =
+        ConfigUtil.getBooleanSetting(
+            env,
+            Lambda.ENV_TRANSCRIPT_OUTPUT_ADD_NEWLINE,
+            Lambda.DEFAULT_TRANSCRIPT_OUTPUT_ADD_NEWLINE);
   }
-
 }

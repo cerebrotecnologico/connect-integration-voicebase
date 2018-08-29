@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved. Licensed under the
+ * Copyright 2016-${year} Amazon.com, Inc. or its affiliates. All Rights Reserved. Licensed under the
  * Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with
  * the License. A copy of the License is located at
  *
@@ -11,21 +11,15 @@
  */
 package com.voicebase.gateways.awsconnect.lambda;
 
+import com.google.common.base.Splitter;
+import com.voicebase.gateways.awsconnect.LogConfigurer;
 import java.lang.management.ManagementFactory;
 import java.util.Map;
 import java.util.Properties;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Splitter;
-import com.voicebase.gateways.awsconnect.LogConfigurer;
-
-/**
- * 
- * @author volker@voicebase.com
- *
- */
+/** @author volker@voicebase.com */
 public abstract class LambdaHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(LambdaHandler.class);
@@ -35,22 +29,22 @@ public abstract class LambdaHandler {
   protected static final Splitter CSV_SPLITTER = Splitter.on(",").omitEmptyStrings().trimResults();
   protected static final String DEFAULT_PROPERTIES = "lambda.properties";
 
-
   protected abstract void configure(Map<String, String> env);
 
   private Properties handlerProperties = null;
 
   /**
    * Constructor.
-   * 
-   * Perfoms the following tasks:
+   *
+   * <p>Perfoms the following tasks:
+   *
    * <ol>
-   * <li>Configure logging ({@link #configureLogging(Map)})</li>
-   * <li>Load the default properties file ({@link #loadProperties()})</li>
-   * <li>Print out a start message {{@link #sayHello()})</li>
-   * <li>Configure the handler ({@link #configure(Map)})</li>
+   *   <li>Configure logging ({@link #configureLogging(Map)})
+   *   <li>Load the default properties file ({@link #loadProperties()})
+   *   <li>Print out a start message {{@link #sayHello()})
+   *   <li>Configure the handler ({@link #configure(Map)})
    * </ol>
-   * 
+   *
    * @param env handler environment
    */
   protected LambdaHandler(Map<String, String> env) {
@@ -84,8 +78,10 @@ public abstract class LambdaHandler {
   }
 
   protected void sayHello() {
-    LOGGER.info("This is {} version {} running on JVM {}", getClass().getSimpleName(),
-        getHandlerProperties().getProperty(PROPERTY_KEY_VERSION, "<UNKNIOWN>"), RUNTIME_ID);
+    LOGGER.info(
+        "This is {} version {} running on JVM {}",
+        getClass().getSimpleName(),
+        getHandlerProperties().getProperty(PROPERTY_KEY_VERSION, "<UNKNOWN>"),
+        RUNTIME_ID);
   }
-
 }

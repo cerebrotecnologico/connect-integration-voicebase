@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved. Licensed under the
+ * Copyright 2016-${year} Amazon.com, Inc. or its affiliates. All Rights Reserved. Licensed under the
  * Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with
  * the License. A copy of the License is located at
  *
@@ -13,9 +13,8 @@ package com.voicebase.gateways.awsconnect.response;
 
 /**
  * Response object to be returned to the VoiceBase API callback servers.
- * 
- * @author Volker Kueffel <volker@voicebase.com>
  *
+ * @author Volker Kueffel <volker@voicebase.com>
  */
 public final class ServiceResponse {
 
@@ -47,15 +46,11 @@ public final class ServiceResponse {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (getClass() != obj.getClass())
-      return false;
+    if (this == obj) return true;
+    if (obj == null) return false;
+    if (getClass() != obj.getClass()) return false;
     ServiceResponse other = (ServiceResponse) obj;
-    if (success != other.success)
-      return false;
+    if (success != other.success) return false;
     return true;
   }
 
@@ -67,5 +62,4 @@ public final class ServiceResponse {
     builder.append("]");
     return builder.toString();
   }
-
 }

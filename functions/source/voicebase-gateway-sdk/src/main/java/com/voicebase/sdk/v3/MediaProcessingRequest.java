@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved. Licensed under the
+ * Copyright 2016-${year} Amazon.com, Inc. or its affiliates. All Rights Reserved. Licensed under the
  * Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with
  * the License. A copy of the License is located at
  *
@@ -11,16 +11,11 @@
  */
 package com.voicebase.sdk.v3;
 
-import java.io.File;
-
 import com.voicebase.v3client.datamodel.VbConfiguration;
 import com.voicebase.v3client.datamodel.VbMetadata;
+import java.io.File;
 
-/**
- * 
- * @author Volker Kueffel <volker@voicebase.com>
- *
- */
+/** @author Volker Kueffel <volker@voicebase.com> */
 public class MediaProcessingRequest {
 
   private VbConfiguration configuration;
@@ -35,10 +30,10 @@ public class MediaProcessingRequest {
   public void setConfiguration(VbConfiguration configuration) {
     this.configuration = configuration;
   }
-  
+
   public MediaProcessingRequest withConfiguration(VbConfiguration configuration) {
-      setConfiguration(configuration);
-      return this;
+    setConfiguration(configuration);
+    return this;
   }
 
   public VbMetadata getMetadata() {
@@ -53,7 +48,7 @@ public class MediaProcessingRequest {
     setMetadata(metadata);
     return this;
   }
-  
+
   public File getMediaFile() {
     return mediaFile;
   }
@@ -83,33 +78,22 @@ public class MediaProcessingRequest {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (getClass() != obj.getClass())
-      return false;
+    if (this == obj) return true;
+    if (obj == null) return false;
+    if (getClass() != obj.getClass()) return false;
     MediaProcessingRequest other = (MediaProcessingRequest) obj;
     if (configuration == null) {
-      if (other.configuration != null)
-        return false;
-    } else if (!configuration.equals(other.configuration))
-      return false;
+      if (other.configuration != null) return false;
+    } else if (!configuration.equals(other.configuration)) return false;
     if (mediaFile == null) {
-      if (other.mediaFile != null)
-        return false;
-    } else if (!mediaFile.equals(other.mediaFile))
-      return false;
+      if (other.mediaFile != null) return false;
+    } else if (!mediaFile.equals(other.mediaFile)) return false;
     if (mediaUrl == null) {
-      if (other.mediaUrl != null)
-        return false;
-    } else if (!mediaUrl.equals(other.mediaUrl))
-      return false;
+      if (other.mediaUrl != null) return false;
+    } else if (!mediaUrl.equals(other.mediaUrl)) return false;
     if (metadata == null) {
-      if (other.metadata != null)
-        return false;
-    } else if (!metadata.equals(other.metadata))
-      return false;
+      if (other.metadata != null) return false;
+    } else if (!metadata.equals(other.metadata)) return false;
     return true;
   }
 
@@ -127,5 +111,4 @@ public class MediaProcessingRequest {
     builder.append("]");
     return builder.toString();
   }
-
 }

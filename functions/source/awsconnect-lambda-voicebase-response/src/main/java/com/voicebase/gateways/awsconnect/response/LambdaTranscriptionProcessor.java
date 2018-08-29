@@ -1,5 +1,5 @@
 /**
- * Copyright 2016-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved. Licensed under the
+ * Copyright 2016-${year} Amazon.com, Inc. or its affiliates. All Rights Reserved. Licensed under the
  * Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with
  * the License. A copy of the License is located at
  *
@@ -11,12 +11,6 @@
  */
 package com.voicebase.gateways.awsconnect.response;
 
-import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
@@ -26,13 +20,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.voicebase.gateways.awsconnect.BeanFactory;
 import com.voicebase.gateways.awsconnect.RequestSourceValidator;
 import com.voicebase.gateways.awsconnect.lambda.LambdaHandler;
+import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Lambda function to retrieve response from the VoiceBase API callback servers and sending it to a
  * Kinesis stream.
- * 
- * @author Volker Kueffel <volker@voicebase.com>
  *
+ * @author Volker Kueffel <volker@voicebase.com>
  */
 public class LambdaTranscriptionProcessor extends LambdaHandler
     implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
@@ -54,7 +51,7 @@ public class LambdaTranscriptionProcessor extends LambdaHandler
 
   LambdaTranscriptionProcessor(Map<String, String> env) {
     super(env);
- 
+
     String successResponse;
     String failureResponse;
     try {
@@ -86,8 +83,8 @@ public class LambdaTranscriptionProcessor extends LambdaHandler
   }
 
   @Override
-  public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input,
-      Context context) {
+  public APIGatewayProxyResponseEvent handleRequest(
+      APIGatewayProxyRequestEvent input, Context context) {
     if (input == null || input.getBody() == null || StringUtils.isEmpty(input.getBody())) {
       return responseInvalidRequest;
     }
@@ -108,12 +105,11 @@ public class LambdaTranscriptionProcessor extends LambdaHandler
 
   /**
    * Check incoming request against source IP whitelist if there is one.
-   * <p/>
-   * Right now only accepts IP addresses on the whitelist, may want to extend to process CIDRs.
-   * 
+   *
+   * <p>Right now only accepts IP addresses on the whitelist, may want to extend to process CIDRs.
+   *
    * @param input incoming event
    * @param env this function's environment
-   * 
    * @return true if passed IP check or there is no whitelist, false otherwise
    */
   boolean validateRequestSource(APIGatewayProxyRequestEvent input) {
