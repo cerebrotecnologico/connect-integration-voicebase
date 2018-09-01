@@ -19,11 +19,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
-/**
- * 
- * @author Volker Kueffel <volker@voicebase.com>
- *
- */
+/** @author Volker Kueffel <volker@voicebase.com> */
 public class IOUtil {
 
   public static File writeToTempFile(InputStream in, String filePrefix) throws IOException {
@@ -52,7 +48,6 @@ public class IOUtil {
     return result;
   }
 
-
   public static void copy(InputStream in, OutputStream out) throws IOException {
     byte[] buffer = new byte[4096];
 
@@ -61,5 +56,4 @@ public class IOUtil {
       out.write(buffer, 0, bytesRead);
     }
   }
-
 }

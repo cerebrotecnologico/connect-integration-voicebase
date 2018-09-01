@@ -12,15 +12,10 @@
 package com.voicebase.sdk.v3;
 
 import java.util.Map;
-
 import retrofit.http.GET;
 import retrofit.http.Header;
 
-/**
- * 
- * @author Volker Kueffel <volker@voicebase.com>
- *
- */
+/** @author Volker Kueffel <volker@voicebase.com> */
 public interface VoiceBaseService {
   @GET("/")
   public Map<String, ?> getResources(@Header("Authorization") String authorization);

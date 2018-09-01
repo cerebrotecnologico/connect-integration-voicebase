@@ -11,38 +11,42 @@
  */
 package com.voicebase.gateways.awsconnect.lambda;
 
-import java.util.Map;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Map;
 
-/**
- * @author Volker Kueffel <volker@voicebase.com>
- *
- */
+/** @author Volker Kueffel <volker@voicebase.com> */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(Include.NON_NULL)
 public class CustomResourceResponse {
   public static enum Status {
-    SUCCESS, FAILED
+    SUCCESS,
+    FAILED
   }
 
   @JsonProperty("Status")
   private Status status;
+
   @JsonProperty("Reason")
   private String reason;
+
   @JsonProperty("StackId")
   private String stackId;
+
   @JsonProperty("RequestId")
   private String requestId;
+
   @JsonProperty("PhysicalResourceId")
   private String physicalResourceId;
+
   @JsonProperty("LogicalResourceId")
   private String logicalResourceId;
+
   @JsonProperty("NoEcho")
   private boolean noEcho;
+
   @JsonProperty("Data")
   private Map<String, Object> data;
 
@@ -110,7 +114,6 @@ public class CustomResourceResponse {
     this.data = data;
   }
 
-
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -128,47 +131,30 @@ public class CustomResourceResponse {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (getClass() != obj.getClass())
-      return false;
+    if (this == obj) return true;
+    if (obj == null) return false;
+    if (getClass() != obj.getClass()) return false;
     CustomResourceResponse other = (CustomResourceResponse) obj;
     if (data == null) {
-      if (other.data != null)
-        return false;
-    } else if (!data.equals(other.data))
-      return false;
+      if (other.data != null) return false;
+    } else if (!data.equals(other.data)) return false;
     if (logicalResourceId == null) {
-      if (other.logicalResourceId != null)
-        return false;
-    } else if (!logicalResourceId.equals(other.logicalResourceId))
-      return false;
-    if (noEcho != other.noEcho)
-      return false;
+      if (other.logicalResourceId != null) return false;
+    } else if (!logicalResourceId.equals(other.logicalResourceId)) return false;
+    if (noEcho != other.noEcho) return false;
     if (physicalResourceId == null) {
-      if (other.physicalResourceId != null)
-        return false;
-    } else if (!physicalResourceId.equals(other.physicalResourceId))
-      return false;
+      if (other.physicalResourceId != null) return false;
+    } else if (!physicalResourceId.equals(other.physicalResourceId)) return false;
     if (reason == null) {
-      if (other.reason != null)
-        return false;
-    } else if (!reason.equals(other.reason))
-      return false;
+      if (other.reason != null) return false;
+    } else if (!reason.equals(other.reason)) return false;
     if (requestId == null) {
-      if (other.requestId != null)
-        return false;
-    } else if (!requestId.equals(other.requestId))
-      return false;
+      if (other.requestId != null) return false;
+    } else if (!requestId.equals(other.requestId)) return false;
     if (stackId == null) {
-      if (other.stackId != null)
-        return false;
-    } else if (!stackId.equals(other.stackId))
-      return false;
-    if (status != other.status)
-      return false;
+      if (other.stackId != null) return false;
+    } else if (!stackId.equals(other.stackId)) return false;
+    if (status != other.status) return false;
     return true;
   }
 
@@ -194,5 +180,4 @@ public class CustomResourceResponse {
     builder.append("]");
     return builder.toString();
   }
-
 }

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.voicebase.awsconnect</groupId>
   <artifactId>awsconnect-parent</artifactId>
-  <version>0.9</version>
+  <version>0.9.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <description>AWSConnect-Voicebase Gateway</description>
@@ -57,6 +57,12 @@
 
       <dependency>
         <groupId>com.amazonaws</groupId>
+        <artifactId>aws-java-sdk-sqs</artifactId>
+        <version>${awssdk.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>com.amazonaws</groupId>
         <artifactId>aws-java-sdk-kinesis</artifactId>
         <version>${awssdk.version}</version>
         <exclusions>
@@ -83,7 +89,7 @@
       <dependency>
         <groupId>com.amazonaws</groupId>
         <artifactId>aws-lambda-java-events</artifactId>
-        <version>2.0.1</version>
+        <version>2.2.2</version>
         <exclusions>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -261,8 +267,6 @@
     <!-- Need this for AWS packaging -->
     <finalName>awsconnect-parent</finalName>
 
-
-
     <pluginManagement>
       <plugins>
         <plugin>
@@ -297,7 +301,7 @@
 
         <plugin>
           <!-- NOTE: We don't need a groupId specification because the group 
-            is org.apache.maven.plugins ...which is assumed by default. -->
+          is org.apache.maven.plugins ...which is assumed by default. -->
           <artifactId>maven-assembly-plugin</artifactId>
           <version>3.1.0</version>
           <configuration>
@@ -306,6 +310,15 @@
               <descriptor>assembly.xml</descriptor>
             </descriptors>
           </configuration>
+          <executions>
+            <execution>
+              <id>make-assembly</id> <!-- this is used for inheritance merges -->
+              <phase>package</phase> <!-- bind to the packaging phase -->
+              <goals>
+                <goal>single</goal>
+              </goals>
+            </execution>
+          </executions>
         </plugin>
 
         <plugin>

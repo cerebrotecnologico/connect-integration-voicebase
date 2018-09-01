@@ -11,11 +11,7 @@
  */
 package com.voicebase.sdk.util;
 
-
-/**
- * @author Volker Kueffel <volker@voicebase.com>
- *
- */
+/** @author Volker Kueffel <volker@voicebase.com> */
 public class ApiException extends RuntimeException {
 
   private static final long serialVersionUID = 1L;
@@ -25,7 +21,8 @@ public class ApiException extends RuntimeException {
     super();
   }
 
-  public ApiException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+  public ApiException(
+      String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
     super(message, cause, enableSuppression, writableStackTrace);
   }
 
@@ -53,5 +50,4 @@ public class ApiException extends RuntimeException {
     setStatusCode(statusCode);
     return this;
   }
-  
 }

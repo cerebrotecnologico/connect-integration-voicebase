@@ -13,17 +13,6 @@ package com.voicebase.gateways.lambda;
 
 import static com.voicebase.gateways.awsconnect.ConfigUtil.getStringSetting;
 
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.Map;
-
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,12 +24,20 @@ import com.voicebase.gateways.awsconnect.lambda.Lambda;
 import com.voicebase.gateways.awsconnect.lambda.LambdaHandler;
 import com.voicebase.sdk.v3.ServiceFactory;
 import com.voicebase.sdk.v3.VoiceBaseClient;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Map;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Lambda function to be used as custom resource to validate the provided Voicebase API token.
- * 
- * @author Volker Kueffel <volker@voicebase.com>
  *
+ * @author Volker Kueffel <volker@voicebase.com>
  */
 public class LambdaVoicebaseApiTokenValidator extends LambdaHandler
     implements RequestHandler<InputStream, Void> {
@@ -51,8 +48,6 @@ public class LambdaVoicebaseApiTokenValidator extends LambdaHandler
   private VoiceBaseClient voicebaseClient;
   private ObjectMapper objectMapper;
   private String vbApiToken;
-
-
 
   public LambdaVoicebaseApiTokenValidator() {
     this(System.getenv());
@@ -77,7 +72,6 @@ public class LambdaVoicebaseApiTokenValidator extends LambdaHandler
     return null;
   }
 
-
   private void doHandleRequest(CustomResourceRequest request, Context context) {
     LOGGER.info("Received request: {}", request);
 
@@ -98,9 +92,9 @@ public class LambdaVoicebaseApiTokenValidator extends LambdaHandler
 
     if (!sendResponse(request, response)) {
       throw new RuntimeException("Unable to send response.");
-    } ;
+    }
+    ;
   }
-
 
   private void validateToken(CustomResourceRequest request, CustomResourceResponse response) {
     LOGGER.info("Validating VoiceBase API token...");
@@ -115,8 +109,6 @@ public class LambdaVoicebaseApiTokenValidator extends LambdaHandler
       LOGGER.info("Token invalid.");
     }
   }
-
-
 
   protected boolean sendResponse(CustomResourceRequest request, CustomResourceResponse response) {
     response.setStackId(request.getStackId());
@@ -140,9 +132,7 @@ public class LambdaVoicebaseApiTokenValidator extends LambdaHandler
       LOGGER.error("Error sending response", e);
       return false;
     }
-
   }
-
 
   protected void configure(Map<String, String> env) {
     objectMapper = BeanFactory.objectMapper();
@@ -154,5 +144,4 @@ public class LambdaVoicebaseApiTokenValidator extends LambdaHandler
 
     voicebaseClient = ServiceFactory.voicebaseClient(vbApiUrl, vbApiClientLogLevel);
   }
-  
 }

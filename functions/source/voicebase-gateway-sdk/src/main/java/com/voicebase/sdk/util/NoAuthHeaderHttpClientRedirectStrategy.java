@@ -14,7 +14,6 @@ package com.voicebase.sdk.util;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -28,83 +27,75 @@ import org.apache.http.protocol.HttpContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-/**
- * 
- * @author Volker Kueffel <volker@voicebase.com>
- *
- */
+/** @author Volker Kueffel <volker@voicebase.com> */
 public class NoAuthHeaderHttpClientRedirectStrategy extends DefaultRedirectStrategy {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(NoAuthHeaderHttpClientRedirectStrategy.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(NoAuthHeaderHttpClientRedirectStrategy.class);
 
-	private static final String AUTH_HEADER = "Authorization";
+  private static final String AUTH_HEADER = "Authorization";
 
-	private static class HeaderFilteringHttpGet extends HttpGet {
-		public HeaderFilteringHttpGet(URI uri) {
-			super(uri);
-		}
+  private static class HeaderFilteringHttpGet extends HttpGet {
+    public HeaderFilteringHttpGet(URI uri) {
+      super(uri);
+    }
 
-		@Override
-		public void setHeaders(Header[] headers) {
-			super.setHeaders(filter(headers));
-		}
-	}
+    @Override
+    public void setHeaders(Header[] headers) {
+      super.setHeaders(filter(headers));
+    }
+  }
 
-	private static class HeaderFilteringHttpHead extends HttpHead {
+  private static class HeaderFilteringHttpHead extends HttpHead {
 
-		public HeaderFilteringHttpHead(URI uri) {
-			super(uri);
-		}
+    public HeaderFilteringHttpHead(URI uri) {
+      super(uri);
+    }
 
-		@Override
-		public void setHeaders(Header[] headers) {
-			super.setHeaders(filter(headers));
-		}
+    @Override
+    public void setHeaders(Header[] headers) {
+      super.setHeaders(filter(headers));
+    }
+  }
 
-	}
+  private static Header[] filter(Header[] in) {
+    LOGGER.debug("Filtering headers...");
+    Header[] newHeaders = null;
+    if (in != null && in.length > 0) {
+      List<Header> headers = new ArrayList<>();
+      for (Header header : in) {
+        if (!AUTH_HEADER.equalsIgnoreCase(header.getName())) {
+          headers.add(header);
+          if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("{}: {}", header.getName(), header.getValue());
+          }
+        } else {
+          LOGGER.debug("Removing '{}' header", AUTH_HEADER);
+        }
+      }
 
-	private static  Header[] filter(Header[] in) {
-		LOGGER.debug("Filtering headers...");
-		Header[] newHeaders = null;
-		if (in != null && in.length > 0) {
-			List<Header> headers = new ArrayList<>();
-			for (Header header : in) {
-				if (!AUTH_HEADER.equalsIgnoreCase(header.getName())) {
-					headers.add(header);
-					if (LOGGER.isDebugEnabled()) {
-						LOGGER.debug("{}: {}", header.getName(), header.getValue());
-					}
-				} else {
-					LOGGER.debug("Removing '{}' header", AUTH_HEADER);
-				}
+      if (headers.size() > 0) {
+        newHeaders = headers.toArray(new Header[headers.size()]);
+      }
+    }
+    return newHeaders;
+  }
 
-			}
+  @Override
+  public HttpUriRequest getRedirect(HttpRequest request, HttpResponse response, HttpContext context)
+      throws ProtocolException {
 
-			if (headers.size() > 0) {
-				newHeaders = headers.toArray(new Header[headers.size()]);
-			}
-		}
-		return newHeaders;
-	}
+    LOGGER.debug("Redirecting...");
+    URI uri = getLocationURI(request, response, context);
+    String method = request.getRequestLine().getMethod();
 
-	@Override
-	public HttpUriRequest getRedirect(HttpRequest request, HttpResponse response, HttpContext context)
-			throws ProtocolException {
+    HttpRequestBase newRequest;
+    if (method.equalsIgnoreCase(HttpHead.METHOD_NAME)) {
+      newRequest = new HeaderFilteringHttpHead(uri);
+    } else {
+      newRequest = new HeaderFilteringHttpGet(uri);
+    }
 
-		LOGGER.debug("Redirecting...");
-		URI uri = getLocationURI(request, response, context);
-		String method = request.getRequestLine().getMethod();
-
-		HttpRequestBase newRequest;
-		if (method.equalsIgnoreCase(HttpHead.METHOD_NAME)) {
-			newRequest = new HeaderFilteringHttpHead(uri);
-		} else {
-			newRequest = new HeaderFilteringHttpGet(uri);
-		}
-
-		return newRequest;
-
-	}
-
+    return newRequest;
+  }
 }

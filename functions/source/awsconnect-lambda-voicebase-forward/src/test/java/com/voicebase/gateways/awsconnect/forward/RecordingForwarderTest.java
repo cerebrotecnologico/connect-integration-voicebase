@@ -12,14 +12,14 @@
 package com.voicebase.gateways.awsconnect.forward;
 
 import static com.voicebase.gateways.awsconnect.VoiceBaseAttributeExtractor.getVoicebaseAttributeName;
+import static org.junit.Assert.assertFalse;
 
+import com.amazonaws.services.s3.model.AmazonS3Exception;
+import com.voicebase.gateways.awsconnect.lambda.Lambda;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.junit.Assert;
 import org.junit.Test;
-
-import com.voicebase.gateways.awsconnect.lambda.Lambda;
 
 public class RecordingForwarderTest {
 
@@ -30,7 +30,6 @@ public class RecordingForwarderTest {
     awsAttr.put(Lambda.KEY_ATTRIBUTES, vbAttr);
     return awsAttr;
   }
-
 
   @SuppressWarnings("unchecked")
   private static Map<String, String> getVbAttributes(Map<String, Object> awsInput) {
@@ -43,20 +42,44 @@ public class RecordingForwarderTest {
     String flowVariable = getVoicebaseAttributeName(Lambda.VB_ATTR_ENABLE);
 
     Map<String, Object> awsAttr = awsConfigStub();
-    Assert.assertTrue("Should forward request if respective flow variable isn't set",
+    Assert.assertTrue(
+        "Should forward request if respective flow variable isn't set",
         forwarder.shouldProcess(awsAttr));
 
     awsAttr = awsConfigStub();
     Map<String, String> vbAttr = getVbAttributes(awsAttr);
     vbAttr.put(flowVariable, "1");
-    Assert.assertTrue("Should forward request if respective flow variable is set to 1",
+    Assert.assertTrue(
+        "Should forward request if respective flow variable is set to 1",
         forwarder.shouldProcess(awsAttr));
 
     awsAttr = awsConfigStub();
     vbAttr = getVbAttributes(awsAttr);
     vbAttr.put(flowVariable, "0");
 
-    Assert.assertFalse("Should not forward request if respective flow variable is set to 0",
+    Assert.assertFalse(
+        "Should not forward request if respective flow variable is set to 0",
         forwarder.shouldProcess(awsAttr));
+  }
+
+  @Test
+  public void testVerifyAudioAvailability() {
+    Map<String, Object> ctrAsMap = awsConfigStub();
+    Map<String, Object> attr = (Map<String, Object>) ctrAsMap.get(Lambda.KEY_ATTRIBUTES);
+    attr.put("x-voicebase_timesToFailAudioExists", 3);
+    RecordingForwarder forwarder = new RecordingForwarder();
+
+    assertFalse(forwarder.verifyAudioAvailability(ctrAsMap, "alfa", "anything"));
+    forwarder.setRedeliveryCount(ctrAsMap, 1);
+    assertFalse(forwarder.verifyAudioAvailability(ctrAsMap, "alfa", "anything"));
+    forwarder.setRedeliveryCount(ctrAsMap, 2);
+    assertFalse(forwarder.verifyAudioAvailability(ctrAsMap, "alfa", "anything"));
+
+    forwarder.setRedeliveryCount(ctrAsMap, 4);
+    try {
+      forwarder.verifyAudioAvailability(ctrAsMap, "alfa", "anything");
+    } catch (AmazonS3Exception se) {
+
+    }
   }
 }
