@@ -12,9 +12,9 @@
   },
   "prediction" : { },
   "metrics" : [ {
-    "metricGroupName" : "sentiment"
-  }, {
     "metricGroupName" : "overtalk"
+  }, {
+    "metricGroupName" : "sentiment"
   }, {
     "metricGroupName" : "talk-style-tone-and-volume"
   } ],
@@ -31,10 +31,5 @@
       "url" : "http://example.com",
       "method" : "post"
     } ]
-  },
-  "labs" : {
-    "voiceActivity" : {
-      "enableVoiceActivity" : true
-    }
   }
 }

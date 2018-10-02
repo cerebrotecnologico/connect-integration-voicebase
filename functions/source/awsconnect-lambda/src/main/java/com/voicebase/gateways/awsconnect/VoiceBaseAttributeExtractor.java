@@ -82,7 +82,7 @@ public final class VoiceBaseAttributeExtractor extends MapConfiguration {
   public static Set<String> getStringParameterSet(ImmutableConfiguration attr, String key) {
     List<String> params = getStringParameterList(attr, key);
     if (params != null && !params.isEmpty()) {
-      return Sets.newHashSet(params);
+      return Sets.newLinkedHashSet(params);
     }
     return null;
   }

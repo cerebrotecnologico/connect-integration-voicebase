@@ -72,7 +72,9 @@ public class MediaProcessingRequestBuilderTest {
             .withAdvancedPunctuationEnabled(true)
             .withAwsInputData(awsConfigStub())
             .withLeftSpeakerName("left")
-            .withRightSpeakerName("right");
+            .withRightSpeakerName("right")
+            .withCategorizationFeatureEnabled(true)
+            .withIndexingFeatureEnabled(true);
     return builder;
   }
 
@@ -114,6 +116,49 @@ public class MediaProcessingRequestBuilderTest {
             .getFeatures()
             .contains(MediaProcessingRequestBuilder.SPEECH_FEATURE_VOICE));
     verifyJSONConfiguration("voice-features.json", req.getConfiguration());
+  }
+
+  @Test
+  public void testAnalyticIndexing() throws IOException {
+    MediaProcessingRequestBuilder builder = requestBuilderStub();
+    Map<String, String> vbAttr = getVbAttributes(builder.getAwsInputData());
+
+    vbAttr.put("voicebase_enableAnalyticIndexing", "1");
+
+    MediaProcessingRequest req = builder.build();
+
+    Assert.assertTrue(req.getConfiguration().getPublish().isEnableAnalyticIndexing());
+    verifyJSONConfiguration("analytic-indexing.json", req.getConfiguration());
+  }
+
+  @Test
+  public void testEnableAllCategories() throws IOException {
+    MediaProcessingRequestBuilder builder = requestBuilderStub();
+    Map<String, String> vbAttr = getVbAttributes(builder.getAwsInputData());
+
+    vbAttr.put("voicebase_enableAllCategories", "1");
+
+    MediaProcessingRequest req = builder.build();
+
+    Assert.assertEquals(1, req.getConfiguration().getCategories().size());
+    Assert.assertTrue(req.getConfiguration().getCategories().get(0).isAllCategories());
+    verifyJSONConfiguration("all-categories.json", req.getConfiguration());
+  }
+
+  @Test
+  public void testSpecificCategories() throws IOException {
+    MediaProcessingRequestBuilder builder = requestBuilderStub();
+    Map<String, String> vbAttr = getVbAttributes(builder.getAwsInputData());
+
+    vbAttr.put("voicebase_categoryNames", "alfa, gamma, beta");
+
+    MediaProcessingRequest req = builder.build();
+
+    Assert.assertEquals(3, req.getConfiguration().getCategories().size());
+    Assert.assertEquals("alfa", req.getConfiguration().getCategories().get(0).getCategoryName());
+    Assert.assertEquals("gamma", req.getConfiguration().getCategories().get(1).getCategoryName());
+    Assert.assertEquals("beta", req.getConfiguration().getCategories().get(2).getCategoryName());
+    verifyJSONConfiguration("specific-categories.json", req.getConfiguration());
   }
 
   @Test

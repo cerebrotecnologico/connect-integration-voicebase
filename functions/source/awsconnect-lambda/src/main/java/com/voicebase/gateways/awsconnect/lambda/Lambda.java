@@ -50,6 +50,18 @@ public class Lambda {
       "VOICEBASE_KNOWLEDGE_DISCOVERY_ENABLE";
   public static final String ENV_ENABLE_ADVANCED_PUNCTUATION =
       "VOICEBASE_ADVANCED_PUNCTUATION_ENABLE";
+  /**
+   * Property name for environment variable controlling whether to enable the categorization
+   * feature. If false, the request attributes enableAllCategories and categoryNames will be
+   * ignored.
+   */
+  public static final String ENV_ENABLE_CATEGORIZATION = "VOICEBASE_CATEGORIZATION_ENABLE";
+  /**
+   * Property name for environment variable controlling whether to enable the analytic indexing
+   * feature. If false, the request attribute enableAnalyticIndexing will be ignored.
+   */
+  public static final String ENV_ENABLE_ANALYTIC_INDEXING = "VOICEBASE_ANALYTIC_INDEXING_ENABLE";
+
   public static final String ENV_LEFT_SPEAKER = "VOICEBASE_SPEAKERS_LEFT";
   public static final String ENV_MEDIA_URL_TTL_MILLIS = "VOICEBASE_MEDIA_URL_TTL_MILLIS";
   public static final String ENV_RIGHT_SPEAKER = "VOICEBASE_SPEAKERS_RIGHT";
@@ -91,6 +103,15 @@ public class Lambda {
   public static final String VB_ATTR_VOCABULARY_NAMES = "names";
   public static final String VB_ATTR_VOCABULARY_TERMS = "terms";
   public static final String VB_ATTR_REDACTORS = "redactors";
+  /**
+   * Indicates whether or not to enable indexing of the transcripts into the VoiceBase Analytic
+   * database, queryable by VBQL
+   */
+  public static final String VB_ATTR_ENABLE_ANALYTICAL_INDEXING = "enableAnalyticIndexing";
+  /** Indicates to perform categorization with all the active categories */
+  public static final String VB_ATTR_ENABLE_ALL_CATEGORIES = "enableAllCategories";
+  /** Indicates to perform categorization with only the specified categories */
+  public static final String VB_ATTR_CATEGORY_NAMES = "categoryNames";
 
   public static final String X_VB_ATTR = "x-voicebase";
   public static final String X_VB_ATTR_TIMES_TO_FAIL_AUDIO_EXISTS = "timesToFailAudioExists";
@@ -112,13 +133,16 @@ public class Lambda {
   public static final boolean DEFAULT_ENABLE_ADVANCED_PUNCTUATION = true;
   public static final boolean DEFAULT_ENABLE_PCI_REDACTION = false;
   public static final boolean DEFAULT_ENABLE_NUMBER_REDACTION = false;
+  public static final boolean DEFAULT_ENABLE_CATEGORIZATION = true;
+  public static final boolean DEFAULT_ENABLE_ANALYTIC_INDEXING = true;
   public static final int DEFAULT_MAX_REDELIVERIES = 7;
 
   public static final List<String> DEFAULT_CALLBACK_INCLUDES_V3 =
       Lists.newArrayList(
           VbIncludeTypeEnum.METADATA.toString(), VbIncludeTypeEnum.TRANSCRIPT.toString(),
           VbIncludeTypeEnum.SPOTTING.toString(), VbIncludeTypeEnum.KNOWLEDGE.toString(),
-          VbIncludeTypeEnum.PREDICTION.toString(), VbIncludeTypeEnum.METRICS.toString());
+          VbIncludeTypeEnum.PREDICTION.toString(), VbIncludeTypeEnum.METRICS.toString(),
+          VbIncludeTypeEnum.CATEGORIES.toString());
   public static final long DEFAULT_MEDIA_URL_TTL_MILLIS = 900000L; // 15min
   public static final List<String> DEFAULT_SOURCE_IPS =
       Lists.newArrayList("52.6.244.43", "52.6.208.178", "52.2.171.140");
