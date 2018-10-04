@@ -52,7 +52,7 @@ public class RecordingForwarder {
   private boolean configureSpeakers;
   private boolean predictionsEnabled;
   private boolean knowledgeEnabled;
-  private boolean advancedPunctuationEnabld;
+  private boolean advancedPunctuationEnabled;
   private String leftSpeakerName;
   private String rightSpeakerName;
   private long mediaUrlTtl;
@@ -65,6 +65,8 @@ public class RecordingForwarder {
   private String callbackMethod;
   private List<String> callbackIncludes;
   private List<String> additionalCallbackUrls;
+  private boolean enableAnalyticIndexingFeature;
+  private boolean enableCategorizationFeatures;
 
   private final AmazonS3 s3Client;
   private final AmazonSQS sqsClient;
@@ -101,10 +103,12 @@ public class RecordingForwarder {
                 .withConfigureSpeakers(configureSpeakers)
                 .withPredictionsEnabled(predictionsEnabled)
                 .withKnowledgeDiscoveryEnabled(knowledgeEnabled)
-                .withAdvancedPunctuationEnabled(advancedPunctuationEnabld)
+                .withAdvancedPunctuationEnabled(advancedPunctuationEnabled)
                 .withAwsInputData(ctrAsMap)
                 .withLeftSpeakerName(leftSpeakerName)
-                .withRightSpeakerName(rightSpeakerName);
+                .withRightSpeakerName(rightSpeakerName)
+                .withIndexingFeatureEnabled(enableAnalyticIndexingFeature)
+                .withCategorizationFeatureEnabled(enableCategorizationFeatures);
 
         MediaProcessingRequest req = builder.build();
 
@@ -205,7 +209,7 @@ public class RecordingForwarder {
     boolean result = false;
     try {
       result = s3Client.doesObjectExist(bucket, key);
-    } catch(SdkClientException e) {
+    } catch (SdkClientException e) {
       LOGGER.info("Unable to perform s3Client.doesObjectExist: {}", e.getMessage());
     }
     return result;
@@ -321,11 +325,20 @@ public class RecordingForwarder {
     knowledgeEnabled =
         getBooleanSetting(
             env, Lambda.ENV_ENABLE_KNOWLEDGE_DISCOVERY, Lambda.DEFAULT_ENABLE_KNOWLEDGE_DISCOVERY);
-    advancedPunctuationEnabld =
+    advancedPunctuationEnabled =
         getBooleanSetting(
             env,
             Lambda.ENV_ENABLE_ADVANCED_PUNCTUATION,
             Lambda.DEFAULT_ENABLE_ADVANCED_PUNCTUATION);
+    // Enabling or disabling categorization features
+    enableCategorizationFeatures =
+        getBooleanSetting(
+            env, Lambda.ENV_ENABLE_CATEGORIZATION, Lambda.DEFAULT_ENABLE_CATEGORIZATION);
+    // Enable or disable analytical indexing feature
+    enableAnalyticIndexingFeature =
+        getBooleanSetting(
+            env, Lambda.ENV_ENABLE_ANALYTIC_INDEXING, Lambda.DEFAULT_ENABLE_ANALYTIC_INDEXING);
+
     leftSpeakerName =
         getStringSetting(env, Lambda.ENV_LEFT_SPEAKER, Lambda.DEFAULT_LEFT_SPEAKER_NAME);
     rightSpeakerName =

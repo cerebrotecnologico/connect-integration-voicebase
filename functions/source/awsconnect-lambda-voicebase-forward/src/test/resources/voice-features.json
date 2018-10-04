@@ -28,10 +28,5 @@
       "url" : "http://example.com",
       "method" : "post"
     } ]
-  },
-  "labs" : {
-    "voiceActivity" : {
-      "enableVoiceActivity" : true
-    }
   }
 }

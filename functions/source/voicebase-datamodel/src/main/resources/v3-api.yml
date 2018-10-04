@@ -1,7 +1,7 @@
 swagger: '2.0'
 info:
   title: Voicebase V3 API
-  version: 3.0.7
+  version: 3.0.11
   description: APIs for speech recognition and speech analytics, powering insights
     every business needs.
   contact:
@@ -53,13 +53,15 @@ definitions:
     - streams
     - transcript
     - metrics
+    - categories
     description: "Include Type:\n  * knowledge - Include knowledge infomation with\
       \ media response.\n  * metadata - Include metadata infomation with media response.\n\
       \  * prediction - Include prediction infomation with media response.\n  * spotting\
       \ - Include spotting infomation with media response.\n  * streams - Include\
       \ streams infomation with media response.\n  * transcript - Include transcript\
       \ infomation with media response.\n  * metrics - Include AQ metrics section\
-      \ with media response\n"
+      \ with media response.\n  * categories - Include analytical categories section\
+      \ with the media response.\n"
   VbCallbackTypeEnum:
     type: string
     enum:
@@ -137,7 +139,7 @@ definitions:
     - dtmf
     description: "Word Type:\n  * punc - Word is punctuation.\n  * turn - Word is\
       \ a speaker turn.\n  * dtmf - Word is DTMF.\n"
-  VbCategoryConfiguration:
+  VbCategoryRequest:
     type: object
     x-voicebase-extension: true
     properties:
@@ -629,6 +631,11 @@ definitions:
           $ref: '#/definitions/VbCallbackConfiguration'
         title: Callbacks
         description: List of callbacks to execute
+      enableAnalyticIndexing:
+        type: boolean
+        title: Publish to Analytics Database
+        description: If true, the transcript will be queryable/searchable by the VBQL
+          API
   VbSearchabilityConfiguration:
     type: object
     x-voicebase-configuration: true
@@ -650,6 +657,19 @@ definitions:
         title: Public Key Identifier
         description: A pointer to a public key saved in the public keys definitions
           collection.
+  VbCategoryConfiguration:
+    type: object
+    x-voicebase-configuration: true
+    description: Specifies category configuration
+    properties:
+      allCategories:
+        type: boolean
+        title: Compute all categories
+        description: If true, all the defined categories will be computed.
+      categoryName:
+        type: string
+        title: Category name
+        description: Specifies a named reference to a pre-defined category
   VbConfiguration:
     type: object
     x-voicebase-configuration: true
@@ -703,6 +723,12 @@ definitions:
         description: List of custom vocabulary configurations
         items:
           $ref: '#/definitions/VbVocabularyConfiguration'
+      categories:
+        type: array
+        title: Categories
+        description: List of category configurations
+        items:
+          $ref: '#/definitions/VbCategoryConfiguration'
       publish:
         title: Publish configuration
         description: Configuration items used by the Publish/Callback service
@@ -716,12 +742,13 @@ definitions:
         title: Encryption Configuration
         description: Specifies client provided encryption key information.
         $ref: '#/definitions/VbEncryptionConfiguration'
-      labs:
-        title: Lab features
-        description: Additional features not fully productized
-        type: object
-        additionalProperties:
-          type: object
+      timeToLiveInSeconds:
+        title: TTL after completion
+        type: integer
+        description: Use this to request automatic deletion. The TTL starts afters
+          all processing by VoiceBase has been completed.  The attribue "expiresnOn"
+          will be reported by a call to  GET /v3/media/{mediaId} after the TTL is
+          computed.
   VbError:
     type: object
     properties:
@@ -777,6 +804,65 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/VbKeywordGroup'
+  VbMatchResult:
+    type: object
+    x-voicebase-extension: true
+    properties:
+      score:
+        type: number
+        format: float
+      conditions:
+        title: Conditions
+        description: Conditions
+        type: array
+        items:
+          type: string
+      fieldValues:
+        type: object
+        additionalProperties:
+          type: object
+  VbRow:
+    type: object
+    x-voicebase-extension: true
+    additionalProperties:
+      type: object
+  VbMatchResultList:
+    type: array
+    x-voicebase-extension: true
+    items:
+      $ref: '#/definitions/VbMatchResult'
+  VbStatementResult:
+    type: object
+    x-voicebase-extension: true
+    properties:
+      totalResults:
+        title: Total
+        description: Total number of recordings matching the query
+        type: integer
+      queryTimeMillis:
+        title: Query time
+        description: Execution time in milliseconds
+        type: integer
+      limit:
+        title: Limit
+        description: Maximum number of records to be returned
+        type: integer
+      offset:
+        title: Offset
+        description: Offset from the beginning of search results
+        type: integer
+      hits:
+        title: Notes
+        description: Notes about the query
+        type: array
+        items:
+          $ref: '#/definitions/VbMatchResultList'
+      rows:
+        title: Rows
+        description: Row data
+        type: array
+        items:
+          $ref: '#/definitions/VbRow'
   VbMetadata:
     type: object
     x-voicebase-extension: true
@@ -826,6 +912,18 @@ definitions:
         format: date-time
         description: The date and time the media processing completed.  This value
           is set by VoiceBase and cannot be changed.
+      timeToLiveInSeconds:
+        type: integer
+        title: TTL after completion
+        description: The requested The TTL after VoiceBase has completed all processing.
+          Not reported if there is no TTL.
+      expiresOn:
+        type: string
+        format: date-time
+        title: Date and time for automatic deletion.
+        description: Date and time when the recording, transcripts and analytics will
+          be deleted from the system automatically. Computed from the TTL after Voicebase
+          has completed processing and executed all callbacks.
       metadata:
         $ref: '#/definitions/VbMetadata'
         description: User defined data associated with this record.
@@ -1358,6 +1456,18 @@ definitions:
         type: string
         format: date-time
         description: Processing completion timestamp.
+      timeToLiveInSeconds:
+        type: integer
+        title: TTL after completion
+        description: The requested The TTL after VoiceBase has completed all processing.
+          Not reported if there is no TTL.
+      expiresOn:
+        type: string
+        format: date-time
+        title: Date and time for automatic deletion.
+        description: Date and time when the recording, transcripts and analytics will
+          be deleted from the system automatically. Computed from the TTL after Voicebase
+          has completed processing and executed all callbacks.
       metadata:
         $ref: '#/definitions/VbMetadata'
         description: User defined data associated with this record.
@@ -1930,7 +2040,7 @@ paths:
         description: category definition
         required: true
         schema:
-          $ref: '#/definitions/VbCategoryConfiguration'
+          $ref: '#/definitions/VbCategoryRequest'
       responses:
         '200':
           description: SuccessfulOperation
@@ -2077,6 +2187,33 @@ paths:
           description: ForbiddenException
         '404':
           description: NotFoundException
+          schema:
+            $ref: '#/definitions/VbErrorResponse'
+      security:
+      - Authorization: []
+  /v3/analytics/vbql:
+    post:
+      tags:
+      - Search
+      summary: Search using VBQL
+      description: Search using VBQL
+      operationId: searchWithVbql
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: vbqlStatement
+        description: VBQL statement
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: SuccessfulOperation
+          schema:
+            $ref: '#/definitions/VbStatementResult'
+        '401':
+          description: UnauthorizedException
           schema:
             $ref: '#/definitions/VbErrorResponse'
       security:

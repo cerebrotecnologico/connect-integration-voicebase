@@ -16,12 +16,14 @@ import static com.voicebase.gateways.awsconnect.VoiceBaseAttributeExtractor.getS
 import static com.voicebase.gateways.awsconnect.VoiceBaseAttributeExtractor.getStringParameterSet;
 import static com.voicebase.gateways.awsconnect.VoiceBaseAttributeExtractor.getVoicebaseAttributeName;
 
+import com.amazonaws.util.CollectionUtils;
 import com.google.common.collect.Lists;
 import com.voicebase.gateways.awsconnect.VoiceBaseAttributeExtractor;
 import com.voicebase.gateways.awsconnect.lambda.Lambda;
 import com.voicebase.sdk.v3.MediaProcessingRequest;
 import com.voicebase.v3client.datamodel.VbAudioRedactorConfiguration;
 import com.voicebase.v3client.datamodel.VbCallbackConfiguration;
+import com.voicebase.v3client.datamodel.VbCategoryConfiguration;
 import com.voicebase.v3client.datamodel.VbChannelConfiguration;
 import com.voicebase.v3client.datamodel.VbClassifierConfiguration;
 import com.voicebase.v3client.datamodel.VbConfiguration;
@@ -49,7 +51,6 @@ import com.voicebase.v3client.datamodel.VbVocabularyTermConfiguration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -82,6 +83,8 @@ public class MediaProcessingRequestBuilder {
   private boolean predictionsEnabled = true;
   private boolean knowledgeDiscoveryEnabled = false;
   private boolean advancedPunctuationEnabled = true;
+  private boolean indexingFeatureEnabled = true;
+  private boolean categorizationFeatureEnabled = true;
   private boolean configureSpeakers = true;
 
   private String leftSpeakerName;
@@ -105,6 +108,37 @@ public class MediaProcessingRequestBuilder {
 
   Map<String, Object> getAwsInputData() {
     return this.awsInputData;
+  }
+
+  /** @return the indexingFeatureEnabled */
+  public boolean isIndexingFeatureEnabled() {
+    return indexingFeatureEnabled;
+  }
+
+  /** @param indexingFeatureEnabled the indexingFeatureEnabled to set */
+  public void setIndexingFeatureEnabled(boolean indexingFeatureEnabled) {
+    this.indexingFeatureEnabled = indexingFeatureEnabled;
+  }
+
+  /** @return the categorizationFeatureEnabled */
+  public boolean isCategorizationFeatureEnabled() {
+    return categorizationFeatureEnabled;
+  }
+
+  /** @param categorizationFeatureEnabled the categorizationFeatureEnabled to set */
+  public void setCategorizationFeatureEnabled(boolean categorizationFeatureEnabled) {
+    this.categorizationFeatureEnabled = categorizationFeatureEnabled;
+  }
+
+  public MediaProcessingRequestBuilder withCategorizationFeatureEnabled(
+      boolean categorizationFeatureEnabled) {
+    this.categorizationFeatureEnabled = categorizationFeatureEnabled;
+    return this;
+  }
+
+  public MediaProcessingRequestBuilder withIndexingFeatureEnabled(boolean indexingFeatureEnabled) {
+    this.indexingFeatureEnabled = indexingFeatureEnabled;
+    return this;
   }
 
   public void setPredictionsEnabled(boolean predictionsEnabled) {
@@ -231,6 +265,7 @@ public class MediaProcessingRequestBuilder {
     VbSpeechModelConfiguration vbSpeechModelConfiguration = new VbSpeechModelConfiguration();
     VbPublishConfiguration vbPublishConfiguration = new VbPublishConfiguration();
     VbPredictionConfiguration vbPredictionConfiguration = new VbPredictionConfiguration();
+    List<VbCategoryConfiguration> vbCategories = new ArrayList<>();
 
     // speakers
     if (configureSpeakers) {
@@ -277,11 +312,6 @@ public class MediaProcessingRequestBuilder {
       }
     }
     vbPublishConfiguration.callbacks(callbacks);
-
-    Map<String, Object> vbLabsConfiguration = new LinkedHashMap<>();
-    Map<String, Object> vbVoiceActivityConfiguration = new LinkedHashMap<>();
-    vbVoiceActivityConfiguration.put("enableVoiceActivity", Boolean.TRUE);
-    vbLabsConfiguration.put("voiceActivity", vbVoiceActivityConfiguration);
 
     @SuppressWarnings("unchecked")
     Map<String, Object> attributes = (Map<String, Object>) awsInputData.get(Lambda.KEY_ATTRIBUTES);
@@ -399,6 +429,42 @@ public class MediaProcessingRequestBuilder {
 
       vbSpeechModelConfiguration.language(getStringParameter(vbAttrs, Lambda.VB_ATTR_LANGUAGE));
 
+      boolean enableAnalyticalIndexing =
+          getBooleanParameter(vbAttrs, Lambda.VB_ATTR_ENABLE_ANALYTICAL_INDEXING, false);
+      if (indexingFeatureEnabled) {
+        if (enableAnalyticalIndexing) {
+          vbPublishConfiguration.setEnableAnalyticIndexing(enableAnalyticalIndexing);
+        }
+      } else {
+        if (enableAnalyticalIndexing) {
+          LOGGER.info(
+              "Analytical indexing requested in CTR but feature has been disabled, will submit without indexing");
+        }
+      }
+
+      boolean enableAllCategories =
+          getBooleanParameter(vbAttrs, Lambda.VB_ATTR_ENABLE_ALL_CATEGORIES, false);
+      Set<String> categoryNames = getStringParameterSet(vbAttrs, Lambda.VB_ATTR_CATEGORY_NAMES);
+
+      if (categorizationFeatureEnabled) {
+        if (enableAllCategories) {
+          VbCategoryConfiguration vbCategoryConfiguration = new VbCategoryConfiguration();
+          vbCategoryConfiguration.setAllCategories(Boolean.TRUE);
+          vbCategories.add(vbCategoryConfiguration);
+        }
+        if (!CollectionUtils.isNullOrEmpty(categoryNames)) {
+          for (String categoryName : categoryNames) {
+            VbCategoryConfiguration vbCategoryConfiguration = new VbCategoryConfiguration();
+            vbCategoryConfiguration.setCategoryName(categoryName);
+            vbCategories.add(vbCategoryConfiguration);
+          }
+        }
+      } else {
+        if (enableAllCategories || !CollectionUtils.isNullOrEmpty(categoryNames)) {
+          LOGGER.info(
+              "Categorization requested in CTR but feature has been disabled, will submit without categorization");
+        }
+      }
       // classifiers
       if (predictionsEnabled) {
 
@@ -478,8 +544,11 @@ public class MediaProcessingRequestBuilder {
         .transcript(vbTranscriptConfiguration)
         .speechModel(vbSpeechModelConfiguration)
         .prediction(vbPredictionConfiguration)
-        .knowledge(vbKnowledgeConfiguration)
-        .labs(vbLabsConfiguration);
+        .knowledge(vbKnowledgeConfiguration);
+
+    if (!vbCategories.isEmpty()) {
+      vbConfiguration.setCategories(vbCategories);
+    }
 
     return vbConfiguration;
   }

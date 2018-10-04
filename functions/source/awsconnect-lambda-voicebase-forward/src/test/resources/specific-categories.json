@@ -1,0 +1,35 @@
+{
+  "speechModel" : {
+    "features" : [ "voiceFeatures", "advancedPunctuation" ]
+  },
+  "priority" : "normal",
+  "ingest" : {
+    "channels" : [ {
+      "speakerName" : "left"
+    }, {
+      "speakerName" : "right"
+    } ]
+  },
+  "prediction" : { },
+  "knowledge" : {
+    "enableDiscovery" : true,
+    "enableExternalDataSources" : true
+  },
+  "transcript" : {
+    "formatting" : { },
+    "contentFiltering" : { }
+  },
+  "categories" : [ {
+    "categoryName" : "alfa"
+  }, {
+    "categoryName" : "gamma"
+  }, {
+    "categoryName" : "beta"
+  } ],
+  "publish" : {
+    "callbacks" : [ {
+      "url" : "http://example.com",
+      "method" : "post"
+    } ]
+  }
+}
